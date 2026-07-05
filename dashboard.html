@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Potli Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #0a192f; font-family: 'Segoe UI', sans-serif; color: #f1f1f1; -webkit-tap-highlight-color: transparent; }
+        /* WAHI ORIGINAL ROYAL CARD */
+        .royal-card { background: linear-gradient(145deg, #d4af37, #aa8a2e); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .gold-text { color: #d4af37; }
+        .game-list-item { background: #112240; border: 1px solid #233554; border-radius: 20px; transition: 0.3s; }
+        .game-list-item:active { transform: scale(0.98); background: #1a2a4a; }
+        .online-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 8px #22c55e; }
+        
+        /* AD OVERLAY */
+        #adOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
+        .loader { border: 4px solid #233554; border-top: 4px solid #d4af37; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="pb-32">
+
+    <div id="adOverlay">
+        <div class="loader mb-4"></div>
+        <p class="gold-text font-black tracking-widest animate-pulse uppercase text-[10px]">Loading Ad...</p>
+        <div id="adTimer" class="mt-4 text-white font-black text-4xl">5</div>
+    </div>
+
+    <nav class="p-5 flex justify-between items-center sticky top-0 bg-[#0a192f]/95 backdrop-blur-md z-50">
+        <h1 class="text-2xl font-black gold-text uppercase tracking-tighter">Coin<span class="text-white">Potli</span></h1>
+        <div class="flex items-center bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+            <span class="online-dot"></span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-white/80">Server Online</span>
+        </div>
+    </nav>
+
+    <div class="px-5 mb-6">
+        <div class="royal-card rounded-[2.5rem] p-8 text-[#0a192f] relative overflow-hidden shadow-2xl">
+            <p class="text-[11px] font-black uppercase opacity-80 mb-1">Potli Balance</p>
+            <h2 class="text-5xl font-black mb-6 tracking-tight"><span id="totalCoins">0</span> <span class="text-2xl opacity-60 font-bold">Coins</span></h2>
+            
+            <div class="flex justify-between items-center bg-black/10 p-4 rounded-2xl">
+                <div>
+                    <p class="text-[9px] font-bold opacity-70 uppercase mb-1">Convertible Value</p>
+                    <p class="text-2xl font-black" id="inrValue">0.00</p>
+                </div>
+                <button onclick="window.location.href='wallet.html'" class="bg-[#0a192f] text-white px-6 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest active:scale-95 transition">Withdraw</button>
+            </div>
+            <i class="fas fa-coins absolute -bottom-4 -right-2 text-black/5 text-8xl rotate-12"></i>
+        </div>
+    </div>
+
+    <div class="px-5 mb-6">
+        <button id="hourlyBtn" onclick="claimHourly()" class="w-full bg-[#112240] p-4 rounded-2xl border border-[#d4af37]/20 flex justify-between items-center transition active:scale-95">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-[#d4af37]/10 rounded-xl flex items-center justify-center text-[#d4af37]"><i class="fas fa-video"></i></div>
+                <div class="text-left">
+                    <h4 class="text-white font-black text-[11px] uppercase">Hourly Reward</h4>
+                    <p id="hourlyTimerDisplay" class="text-[9px] text-gray-500 font-bold uppercase">Watch & Get 20 Coins</p>
+                </div>
+            </div>
+            <div id="hourlyBadge" class="bg-green-500/20 text-green-500 text-[8px] font-black px-2 py-1 rounded">Ready</div>
+        </button>
+    </div>
+
+    <div class="px-5 space-y-3 mb-10">
+        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Play and Earn</h3>
+
+        <div onclick="playGame('miner.html')" class="game-list-item p-4 flex items-center justify-between border-l-4 border-yellow-500">
+            <div class="flex items-center gap-4"><div class="w-10 h-10 bg-yellow-500/10 rounded-xl flex items-center justify-center text-yellow-500"><i class="fas fa-hammer"></i></div>
+            <div><h4 class="text-white font-black text-xs uppercase">Gold Miner</h4><p class="text-[8px] text-gray-500 font-bold uppercase">Dig Treasures</p></div></div>
+            <i class="fas fa-play-circle gold-text text-xl"></i>
+        </div>
+
+        <div onclick="playGame('snake.html')" class="game-list-item p-4 flex items-center justify-between border-l-4 border-green-500">
+            <div class="flex items-center gap-4"><div class="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center text-green-500"><i class="fas fa-snake"></i></div>
+            <div><h4 class="text-white font-black text-xs uppercase">Snake Pro</h4><p class="text-[8px] text-gray-500 font-bold uppercase">Eat & Earn</p></div></div>
+            <i class="fas fa-play-circle gold-text text-xl"></i>
+        </div>
+
+        <div onclick="playGame('color.html')" class="game-list-item p-4 flex items-center justify-between border-l-4 border-red-500">
+            <div class="flex items-center gap-4"><div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500"><i class="fas fa-palette"></i></div>
+            <div><h4 class="text-white font-black text-xs uppercase">Color Match</h4><p class="text-[8px] text-gray-500 font-bold uppercase">Fast Reflexes</p></div></div>
+            <i class="fas fa-play-circle gold-text text-xl"></i>
+        </div>
+
+        <div onclick="playGame('memory.html')" class="game-list-item p-4 flex items-center justify-between border-l-4 border-purple-500">
+            <div class="flex items-center gap-4"><div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-500"><i class="fas fa-brain"></i></div>
+            <div><h4 class="text-white font-black text-xs uppercase">Memory Puzzle</h4><p class="text-[8px] text-gray-500 font-bold uppercase">IQ Booster</p></div></div>
+            <i class="fas fa-play-circle gold-text text-xl"></i>
+        </div>
+
+        <div onclick="playGame('flip.html')" class="game-list-item p-4 flex items-center justify-between border-l-4 border-blue-500">
+            <div class="flex items-center gap-4"><div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400"><i class="fas fa-clone"></i></div>
+            <div><h4 class="text-white font-black text-xs uppercase">Flip & Win</h4><p class="text-[8px] text-gray-500 font-bold uppercase">Lucky Rewards</p></div></div>
+            <i class="fas fa-play-circle gold-text text-xl"></i>
+        </div>
+
+        <div class="game-list-item p-4 flex items-center justify-between opacity-50 border-l-4 border-gray-600 border-dashed">
+            <div class="flex items-center gap-4"><div class="w-10 h-10 bg-gray-500/10 rounded-xl flex items-center justify-center text-gray-400"><i class="fas fa-dice"></i></div>
+            <div><h4 class="text-gray-400 font-black text-xs uppercase">Ludo Pro</h4><p class="text-[8px] text-gray-600 font-bold uppercase">Upcoming</p></div></div>
+            <span class="text-[7px] font-black text-gray-500 border border-gray-600 px-2 py-1 rounded">WAIT</span>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-[#0a192f]/95 backdrop-blur-md border-t border-white/5 p-5 flex justify-around items-center z-50">
+    <button class="gold-text flex flex-col items-center">
+        <i class="fas fa-home text-xl"></i>
+        <span class="text-[9px] font-bold uppercase mt-1">Lobby</span>
+    </button>
+    <button onclick="window.location.href='profile.html'" class="text-gray-500 flex flex-col items-center">
+        <i class="fas fa-user-circle text-xl"></i>
+        <span class="text-[9px] font-bold uppercase mt-1">Profile</span>
+    </button>
+</div>
+
+    <script>
+        function updateUI() {
+            let coins = parseInt(localStorage.getItem("coins")) || 0;
+            document.getElementById("totalCoins").innerText = coins.toLocaleString();
+            document.getElementById("inrValue").innerText = (coins / 100).toFixed(2);
+            checkHourlyStatus();
+        }
+
+        function showAd(callback) {
+            const overlay = document.getElementById('adOverlay');
+            overlay.style.display = 'flex';
+            let left = 5;
+            document.getElementById('adTimer').innerText = left;
+            let int = setInterval(() => {
+                left--;
+                document.getElementById('adTimer').innerText = left;
+                if(left <= 0) { clearInterval(int); overlay.style.display = 'none'; callback(); }
+            }, 1000);
+        }
+
+        function claimHourly() {
+            const last = localStorage.getItem('lastHourly');
+            const now = new Date().getTime();
+            if (last && (now - last < 3600000)) return;
+            showAd(() => {
+                let current = parseInt(localStorage.getItem("coins")) || 0;
+                localStorage.setItem("coins", current + 20);
+                localStorage.setItem('lastHourly', now);
+                updateUI();
+            });
+        }
+
+        function playGame(url) { showAd(() => { window.location.href = url; }); }
+
+        function checkHourlyStatus() {
+            const last = localStorage.getItem('lastHourly');
+            if(!last) return;
+            const update = () => {
+                const diff = 3600000 - (new Date().getTime() - last);
+                if(diff > 0) {
+                    const m = Math.floor(diff / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    document.getElementById('hourlyTimerDisplay').innerText = `Back in ${m}m ${s}s`;
+                    document.getElementById('hourlyBadge').innerText = "Locked";
+                } else {
+                    document.getElementById('hourlyTimerDisplay').innerText = "Watch & Get 20 Coins";
+                    document.getElementById('hourlyBadge').innerText = "Ready";
+                }
+            };
+            update(); setInterval(update, 1000);
+        }
+
+        window.onload = updateUI;
+        window.onfocus = updateUI;
+    </script>
+</body>
+</html>
