@@ -47,7 +47,6 @@
     </div>
 
     <script>
-        // Mapped Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVLAP9LhgbQodY",
             authDomain: "cpin-4cca9.firebaseapp.com",
@@ -57,24 +56,19 @@
             appId: "1:790141628965:web:6e6a8d465a095c626585cc"
         };
         
-        // Initialize Firebase SDK
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // 1-Click Google Sign-In Flow Engine
         function continueWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-
             auth.signInWithPopup(provider)
             .then((result) => {
                 const user = result.user;
                 const userDocRef = db.collection("users").doc(user.uid);
 
-                // Check if user document already exists inside Cloud Firestore Space
                 userDocRef.get().then((doc) => {
                     if (!doc.exists) {
-                        // Create profile structural entry for new dynamic profile nodes
                         userDocRef.set({
                             uid: user.uid,
                             name: user.displayName || "Player",
@@ -87,7 +81,6 @@
                             enterDashboard();
                         });
                     } else {
-                        // Already registered, pass directly into dashboard lobby template
                         enterDashboard();
                     }
                 });
