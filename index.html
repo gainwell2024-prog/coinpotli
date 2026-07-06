@@ -47,9 +47,9 @@
     </div>
 
     <script>
-        // Real Live Firebase Configuration
+        // Exact Fixed Firebase Configuration (Verified from your config)
         const firebaseConfig = {
-            apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVLAP9LhgbQodY",
+            apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVlAP9LhgbQodY", // Fixed 'Vl' here
             authDomain: "cpin-4cca9.firebaseapp.com",
             projectId: "cpin-4cca9",
             storageBucket: "cpin-4cca9.firebasestorage.app",
@@ -62,37 +62,17 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Redirect mode integration logic
+        // Sign in function using Redirect method
         function continueWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // Using Redirect instead of Popup for high GitHub Pages security compliance
             auth.signInWithRedirect(provider);
         }
 
-        // Handle Redirect Result automatically on page load/return
+        // Check login result after redirect
         auth.getRedirectResult()
         .then((result) => {
             if (result && result.user) {
-                const user = result.user;
-                const userDocRef = db.collection("users").doc(user.uid);
-
-                userDocRef.get().then((doc) => {
-                    if (!doc.exists) {
-                        userDocRef.set({
-                            uid: user.uid,
-                            name: user.displayName || "Player",
-                            email: user.email,
-                            coins: 0,
-                            energy: 15, 
-                            lastEnergyUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        }).then(() => {
-                            enterDashboard();
-                        });
-                    } else {
-                        enterDashboard();
-                    }
-                });
+                handleUserSession(result.user);
             }
         })
         .catch((error) => {
@@ -100,12 +80,33 @@
             alert("Login failed: " + error.message);
         });
 
-        // Monitor persistent authentication state changes
+        // Persistent auth observer
         auth.onAuthStateChanged((user) => {
             if (user) {
                 enterDashboard();
             }
         });
+
+        function handleUserSession(user) {
+            const userDocRef = db.collection("users").doc(user.uid);
+            userDocRef.get().then((doc) => {
+                if (!doc.exists) {
+                    userDocRef.set({
+                        uid: user.uid,
+                        name: user.displayName || "Player",
+                        email: user.email,
+                        coins: 0,
+                        energy: 15, 
+                        lastEnergyUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        enterDashboard();
+                    });
+                } else {
+                    enterDashboard();
+                }
+            });
+        }
 
         function enterDashboard() {
             window.location.href = 'dashboard.html';
