@@ -47,6 +47,7 @@
     </div>
 
     <script>
+        // Real Live Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVLAP9LhgbQodY",
             authDomain: "cpin-4cca9.firebaseapp.com",
@@ -56,14 +57,22 @@
             appId: "1:790141628965:web:6e6a8d465a095c626585cc"
         };
         
+        // Initialize Firebase SDK
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Redirect mode integration logic
         function continueWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-            .then((result) => {
+            // Using Redirect instead of Popup for high GitHub Pages security compliance
+            auth.signInWithRedirect(provider);
+        }
+
+        // Handle Redirect Result automatically on page load/return
+        auth.getRedirectResult()
+        .then((result) => {
+            if (result && result.user) {
                 const user = result.user;
                 const userDocRef = db.collection("users").doc(user.uid);
 
@@ -84,12 +93,19 @@
                         enterDashboard();
                     }
                 });
-            })
-            .catch((error) => {
-                console.error("Auth Error: ", error);
-                alert("Login failed: " + error.message);
-            });
-        }
+            }
+        })
+        .catch((error) => {
+            console.error("Auth Error: ", error);
+            alert("Login failed: " + error.message);
+        });
+
+        // Monitor persistent authentication state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                enterDashboard();
+            }
+        });
 
         function enterDashboard() {
             window.location.href = 'dashboard.html';
