@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        html, body { background: #060d1a; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+        html, body { background: #060d1a; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         
         .app-container {
             width: 100%; max-width: 425px; height: 100%; margin: 0 auto;
@@ -15,68 +15,144 @@
             display: flex; flex-direction: column; position: relative;
         }
 
-        .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 90px; }
+        .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 90px; scrollbar-width: none; }
+        .scroll-area::-webkit-scrollbar { display: none; }
         
         .royal-card { background: linear-gradient(135deg, #d4af37 0%, #f1d572 50%, #aa8a2e 100%); }
-        .engine-card { background: rgba(17, 34, 64, 0.6); border: 1px solid rgba(212,175,55,0.15); }
+        .engine-card { background: rgba(17, 34, 64, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.15); }
         .nav-fixed { position: absolute; bottom: 0; width: 100%; max-width: 425px; background: #0a192f; border-top: 1px solid rgba(255,255,255,0.1); }
-        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #d4af37, #f1d572); transition: width 1s linear; }
+        
+        .progress-bar-fill { 
+            height: 100%; width: 0%; 
+            background: linear-gradient(90deg, #aa8a2e, #d4af37, #f1d572); 
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            transition: width 1s linear; 
+        }
+
+        #adOverlay { display: none; position: fixed; inset: 0; background: rgba(6,13,26,0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
+        .loader { border: 4px solid #112240; border-top: 4px solid #d4af37; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
     </style>
 </head>
 <body>
 
+    <!-- Mandatory Video Ad Overlay to Unlock Rewards -->
+    <div id="adOverlay">
+        <div class="loader mb-4"></div>
+        <p class="text-[#d4af37] font-black tracking-widest animate-pulse uppercase text-[10px]">Loading Network Ad...</p>
+        <div id="adTimer" class="mt-4 text-white font-black text-4xl">5</div>
+    </div>
+
     <div class="app-container">
-        <!-- Scrollable Content -->
         <div class="scroll-area">
-            <nav class="p-5 flex justify-between items-center bg-[#0a192f]/95 backdrop-blur-md z-40">
+            <!-- Top Nav -->
+            <nav class="p-5 flex justify-between items-center bg-[#0a192f]/95 backdrop-blur-md sticky top-0 z-40">
                 <h1 class="text-2xl font-black text-[#d4af37] uppercase tracking-tighter">Coin<span class="text-white">Potli</span></h1>
-                <div class="flex items-center bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                    <span class="text-[9px] font-black uppercase text-white/80" id="userNameHeader">Player</span>
+                <div class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                    <div class="pulse-dot"></div>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-white/90">Server Active</span>
+                    <i class="fas fa-signal text-[9px] text-green-400 ml-0.5"></i>
                 </div>
             </nav>
 
-            <!-- Profile Alert -->
+            <div id="usernameTagContainer" class="hidden px-5 mb-2 text-right">
+                <span id="userNameHeader" class="text-[10px] font-bold text-gray-400 uppercase tracking-wider"></span>
+            </div>
+
+            <!-- Profile Alert Banner -->
             <div id="profileAlertBanner" class="hidden px-5 mb-4">
-                <div class="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-4">
-                    <input type="text" id="newUsernameInput" placeholder="ENTER USERNAME" class="w-full bg-black/40 rounded-xl px-3 py-2 text-[10px] text-white uppercase border border-white/10 mb-2">
-                    <button onclick="saveUsername()" class="w-full bg-orange-500 text-white font-black text-[10px] py-2 rounded-xl uppercase">Update Profile</button>
+                <div class="bg-gradient-to-r from-orange-500/20 to-red-500/10 border border-orange-500/30 rounded-2xl p-4">
+                    <h4 class="text-xs font-black text-white uppercase tracking-wider mb-1">Set Custom Username</h4>
+                    <input type="text" id="newUsernameInput" placeholder="ENTER USERNAME" class="w-full bg-black/40 rounded-xl px-3 py-2 text-[10px] text-white font-bold uppercase border border-white/10 mb-2 focus:outline-none focus:border-orange-500/40">
+                    <button onclick="saveUsername()" class="w-full bg-orange-500 text-white font-black text-[10px] py-2 rounded-xl uppercase tracking-widest transition active:scale-95">Update Profile</button>
                 </div>
             </div>
 
-            <!-- Balance Card -->
+            <!-- Balance Board -->
             <div class="px-5 mb-4">
-                <div class="royal-card rounded-[2.5rem] p-6 text-[#0a192f] shadow-2xl">
+                <div class="royal-card rounded-[2.5rem] p-6 text-[#0a192f] shadow-2xl relative overflow-hidden">
                     <p class="text-[11px] font-black uppercase opacity-80">Potli Balance</p>
-                    <h2 class="text-4xl font-black mb-4 tracking-tight"><span id="totalCoins">0</span></h2>
+                    <h2 class="text-4xl font-black mb-4 tracking-tight"><span id="totalCoins">0</span> <span class="text-lg font-bold opacity-60">Coins</span></h2>
                     <div class="flex justify-between items-center bg-black/10 p-3 rounded-2xl">
-                        <p class="text-[9px] font-bold opacity-70 uppercase">Convertible Value: ₹<span id="inrValue">0.00</span></p>
-                        <button class="bg-[#0a192f] text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase">Withdraw</button>
+                        <p class="text-[10px] font-black uppercase">Value: ₹<span id="inrValue">0.00</span></p>
+                        <button class="bg-[#0a192f] text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider">Withdraw</button>
+                    </div>
+                    <i class="fas fa-coins absolute -bottom-4 -right-2 text-black/5 text-7xl rotate-12"></i>
+                </div>
+            </div>
+
+            <!-- Energy Status Bar (Most Important) -->
+            <div class="px-5 mb-4">
+                <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-orange-500/10 text-orange-400 rounded-xl flex items-center justify-center"><i class="fas fa-bolt text-lg"></i></div>
+                        <div>
+                            <p class="text-[9px] text-gray-500 font-bold uppercase">Available Energy</p>
+                            <h4 class="text-white text-base font-black"><span id="displayEnergy">15</span> <span class="text-[10px] text-orange-400 font-bold uppercase tracking-wider">ACP</span></h4>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span id="minerStatusBadge" class="text-[8px] bg-orange-500/10 text-orange-400 px-2 py-1 rounded font-black uppercase tracking-wider">Auto Claim Ready</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Miner Station -->
+            <!-- RESTORED: Hourly Claim Faucet Trigger Section -->
+            <div class="px-5 mb-5">
+                <button id="hourlyBtn" onclick="claimHourly()" class="w-full bg-white/5 p-4 rounded-2xl border border-white/5 flex justify-between items-center transition active:scale-95">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-[#d4af37]/10 rounded-xl flex items-center justify-center text-[#d4af37]"><i class="fas fa-cubes"></i></div>
+                        <div class="text-left">
+                            <h4 class="text-white font-black text-[11px] uppercase">Faucet Energy Claim</h4>
+                            <p id="hourlyTimerDisplay" class="text-[9px] text-gray-500 font-bold uppercase">Get 50 ACP Energy + 10 Coins</p>
+                        </div>
+                    </div>
+                    <div id="hourlyBadge" class="bg-green-500/20 text-green-500 text-[8px] font-black px-2 py-1 rounded">Claim</div>
+                </button>
+            </div>
+
+            <!-- Quantum Auto-Miner -->
             <div class="px-5 mb-6">
-                <h3 class="text-[10px] font-black text-gray-400 uppercase mb-3">Auto-Miner Station</h3>
-                <div class="engine-card p-5 rounded-[2rem]">
-                    <h4 class="text-white font-black text-xs uppercase">Core Multi-Miner</h4>
-                    <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden my-3">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Quantum Auto-Miner</h3>
+                <div class="engine-card p-5 rounded-[2rem] relative overflow-hidden">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-white font-black text-xs uppercase tracking-wide">ACP CORE v1.0</h4>
+                            <p class="text-[9px] text-gray-400 mt-0.5 font-semibold">Consuming <span class="text-orange-400">2 ACP</span> <i class="fas fa-bolt text-[8px]"></i> per cycle</p>
+                        </div>
+                        <div id="gearIcon" class="w-9 h-9 bg-yellow-500/5 border border-yellow-500/10 rounded-full flex items-center justify-center text-[#d4af37] animate-spin" style="animation-duration: 5s;">
+                            <i class="fas fa-cog text-base"></i>
+                        </div>
+                    </div>
+
+                    <div class="w-full h-2 bg-black/50 rounded-full overflow-hidden mt-4 mb-3 border border-white/5">
                         <div id="minerProgress" class="progress-bar-fill"></div>
                     </div>
-                    <span id="cycleTimerDisplay" class="text-xs font-black text-white">10s</span>
+
+                    <div class="flex justify-between items-center pt-1 border-t border-white/5">
+                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Next Payout In:</span>
+                        <span id="cycleTimerDisplay" class="text-xs font-black tracking-widest text-white bg-black/30 px-2 py-0.5 rounded-md border border-white/5">10s</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Ad Space -->
-            <div class="w-full flex justify-center px-5">
+            <div class="w-full flex justify-center px-5 mb-6">
                 <div class="w-[320px] h-[50px] bg-black/40 rounded-xl border border-white/5 flex items-center justify-center">
-                    <span class="text-[8px] text-gray-600 font-black uppercase">Ad Zone (320x50)</span>
+                    <span class="text-[8px] text-gray-600 font-black uppercase tracking-widest">Ad Zone (320x50)</span>
                 </div>
             </div>
         </div>
 
-        <!-- Fixed Footer -->
-        <div class="nav-fixed p-3 flex justify-around items-center">
+        <!-- Fixed Footer Tab Bar -->
+        <div class="nav-fixed p-3 flex justify-around items-center z-50">
             <button class="text-[#d4af37] flex flex-col items-center">
                 <i class="fas fa-home text-base"></i>
                 <span class="text-[8px] font-black uppercase mt-1">Home</span>
@@ -93,25 +169,156 @@
     </div>
 
     <script>
-        // ... (Keep existing JS logic same, just ensure updateUI calls are active)
+        let autoMinerInterval = null;
+        let cycleTimeLeft = 10;
+        let secureCoinsCheck = 0;
+        let secureEnergyCheck = 0;
+
         function updateUI() {
-            document.getElementById("totalCoins").innerText = (localStorage.getItem("coins") || 0);
+            let coins = parseInt(localStorage.getItem("coins")) || 0;
+            let energy = localStorage.getItem("energy") !== null ? parseInt(localStorage.getItem("energy")) : 15;
+            
+            if(coins < secureCoinsCheck || energy > secureEnergyCheck + 50) {
+                coins = secureCoinsCheck;
+                energy = secureEnergyCheck;
+                localStorage.setItem("coins", coins);
+                localStorage.setItem("energy", energy);
+            }
+
+            document.getElementById("totalCoins").innerText = coins.toLocaleString();
+            document.getElementById("inrValue").innerText = (coins / 100).toFixed(2);
+            document.getElementById("displayEnergy").innerText = energy;
+
+            secureCoinsCheck = coins;
+            secureEnergyCheck = energy;
+
+            checkHourlyStatus();
             checkUserProfileState();
         }
+
         function checkUserProfileState() {
             let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
-            let name = userObj.name || "Player";
-            document.getElementById("userNameHeader").innerText = name;
-            document.getElementById("profileAlertBanner").classList.toggle("hidden", name !== "Demo FirePlayer");
+            let name = userObj.name || "Demo FirePlayer";
+            
+            if(name === "Demo FirePlayer" || name.trim() === "") {
+                document.getElementById("profileAlertBanner").classList.remove("hidden");
+                document.getElementById("usernameTagContainer").classList.add("hidden");
+            } else {
+                document.getElementById("profileAlertBanner").classList.add("hidden");
+                document.getElementById("usernameTagContainer").classList.remove("hidden");
+                document.getElementById("userNameHeader").innerText = `@${name.toUpperCase()}`;
+            }
         }
+
         function saveUsername() {
-            let name = document.getElementById("newUsernameInput").value;
+            let name = document.getElementById("newUsernameInput").value.trim();
+            if(name.length < 3) {
+                alert("Username must be at least 3 characters!");
+                return;
+            }
             let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
             userObj.name = name;
             localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
             updateUI();
         }
-        window.onload = updateUI;
+
+        function showAd(callback) {
+            const overlay = document.getElementById('adOverlay');
+            overlay.style.display = 'flex';
+            let left = 5;
+            document.getElementById('adTimer').innerText = left;
+            let int = setInterval(() => {
+                left--;
+                document.getElementById('adTimer').innerText = left;
+                if(left <= 0) { 
+                    clearInterval(int); 
+                    overlay.style.display = 'none'; 
+                    callback(); 
+                }
+            }, 1000);
+        }
+
+        function claimHourly() {
+            const last = localStorage.getItem('lastHourly');
+            const now = new Date().getTime();
+            if (last && (now - last < 3600000)) return;
+
+            showAd(() => {
+                let currentCoins = parseInt(localStorage.getItem("coins")) || 0;
+                let currentEnergy = localStorage.getItem("energy") !== null ? parseInt(localStorage.getItem("energy")) : 15;
+
+                secureCoinsCheck = currentCoins + 10;
+                secureEnergyCheck = currentEnergy + 50;
+
+                localStorage.setItem("coins", secureCoinsCheck);
+                localStorage.setItem("energy", secureEnergyCheck);
+                localStorage.setItem('lastHourly', now);
+                
+                updateUI();
+                startAutoMiner(); 
+            });
+        }
+
+        function checkHourlyStatus() {
+            const last = localStorage.getItem('lastHourly');
+            if(!last) return;
+            const diff = 3600000 - (new Date().getTime() - last);
+            if(diff > 0) {
+                const m = Math.floor(diff / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                document.getElementById('hourlyTimerDisplay').innerText = `Back in ${m}m ${s}s`;
+                document.getElementById('hourlyBadge').innerText = "Locked";
+                document.getElementById('hourlyBtn').disabled = true;
+            } else {
+                document.getElementById('hourlyTimerDisplay').innerText = "Get 50 ACP Energy + 10 Coins";
+                document.getElementById('hourlyBadge').innerText = "Claim";
+                document.getElementById('hourlyBtn').disabled = false;
+            }
+        }
+
+        function startAutoMiner() {
+            if (autoMinerInterval) return;
+
+            autoMinerInterval = setInterval(() => {
+                let currentEnergy = localStorage.getItem("energy") !== null ? parseInt(localStorage.getItem("energy")) : 15;
+                
+                if (currentEnergy >= 2) {
+                    cycleTimeLeft--;
+                    document.getElementById("minerStatusBadge").innerText = "Auto Claim Running";
+                    document.getElementById("gearIcon").classList.add("animate-spin");
+                    
+                    let elapsedPercent = ((10 - cycleTimeLeft) / 10) * 100;
+                    document.getElementById("minerProgress").style.width = elapsedPercent + "%";
+                    document.getElementById("cycleTimerDisplay").innerText = cycleTimeLeft + "s";
+
+                    if (cycleTimeLeft <= 0) {
+                        cycleTimeLeft = 10;
+                        document.getElementById("minerProgress").style.width = "0%";
+
+                        let coins = parseInt(localStorage.getItem("coins")) || 0;
+                        secureEnergyCheck = currentEnergy - 2;
+                        secureCoinsCheck = coins + 5;
+
+                        localStorage.setItem("energy", secureEnergyCheck);
+                        localStorage.setItem("coins", secureCoinsCheck);
+                        updateUI();
+                    }
+                } else {
+                    document.getElementById("minerProgress").style.width = "0%";
+                    document.getElementById("cycleTimerDisplay").innerText = "Idle";
+                    document.getElementById("minerStatusBadge").innerText = "Need Energy (ACP)";
+                    document.getElementById("gearIcon").classList.remove("animate-spin");
+                    clearInterval(autoMinerInterval);
+                    autoMinerInterval = null;
+                }
+            }, 1000);
+        }
+
+        window.onload = () => {
+            updateUI();
+            setInterval(checkHourlyStatus, 1000);
+            startAutoMiner();
+        };
     </script>
 </body>
 </html>
