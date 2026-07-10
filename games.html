@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Zone - CoinPotli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #0a192f; font-family: 'Segoe UI', sans-serif; color: #f1f1f1; -webkit-tap-highlight-color: transparent; }
+        .gold-text { color: #d4af37; }
+        .game-card { background: #112240; border: 1px solid #233554; border-radius: 24px; position: relative; overflow: hidden; margin-bottom: 12px; }
+        .online-tag { background: rgba(34, 197, 94, 0.1); color: #22c55e; font-size: 7px; padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(34, 197, 94, 0.2); font-weight: 900; text-transform: uppercase; }
+        .win-tag-line { color: #d4af37; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.3px; }
+        .play-btn { background: linear-gradient(135deg, #d4af37 0%, #f1d572 100%); color: #0a192f; font-size: 10px; font-weight: 900; padding: 8px 14px; border-radius: 10px; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2); text-transform: uppercase; }
+        .ad-banner-mid { background: rgba(255,255,255,0.02); border: 1px dashed rgba(212, 175, 55, 0.2); border-radius: 15px; padding: 18px; text-align: center; color: #4b5563; font-size: 9px; margin: 15px 0; font-weight: bold; letter-spacing: 1px; }
+        #adOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
+        .loader { border: 4px solid #233554; border-top: 4px solid #d4af37; border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .nav-active { color: #d4af37; border-top: 2px solid #d4af37; }
+    </style>
+</head>
+<body class="pb-32">
+
+    <div id="adOverlay">
+        <div class="loader mb-4"></div>
+        <p class="gold-text font-black tracking-widest animate-pulse uppercase text-[10px]">Playing Video Ad...</p>
+        <div id="adTimer" class="mt-4 text-white font-black text-4xl">5</div>
+    </div>
+
+    <nav class="p-5 flex justify-between items-center sticky top-0 bg-[#0a192f]/95 backdrop-blur-md z-50">
+        <div><h1 class="text-xl font-black gold-text uppercase tracking-tighter">Game<span class="text-white">Zone</span></h1><p class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Premium Play Zone</p></div>
+        <div class="bg-white/5 px-4 py-2 rounded-2xl border border-white/10 flex items-center"><span class="text-[12px] font-black gold-text" id="gameBalance">0</span><i class="fas fa-coins text-[10px] gold-text ml-1"></i></div>
+    </nav>
+
+    <div class="px-5 mt-4">
+        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Active Games (15)</h3>
+        
+        <div id="gamesContainer">
+            </div>
+
+        <h3 class="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mt-10 mb-4 px-1">Coming Soon (5)</h3>
+        <div class="space-y-3 opacity-30 mb-10">
+            <script>
+                const upcoming = ['Ludo Multiplayer', 'Nitro Racing', 'Chess Arena', 'Cricket League', 'Poker Star'];
+                upcoming.forEach(u => {
+                    document.write(`<div class="game-card p-4 border-l-4 border-gray-600 border-dashed"><div class="flex items-center gap-4"><div class="w-10 h-10 bg-gray-500/10 rounded-xl flex items-center justify-center text-gray-500"><i class="fas fa-lock"></i></div><h4 class="text-gray-400 font-black text-xs uppercase">${u}</h4></div></div>`);
+                });
+            </script>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-[#112240]/95 backdrop-blur-md border-t border-white/5 p-4 flex justify-around items-center z-50">
+        <button onclick="window.location.href='dashboard.html'" class="text-gray-500 flex flex-col items-center pt-2"><i class="fas fa-home text-lg"></i><span class="text-[8px] font-black uppercase mt-1">Home</span></button>
+        <button class="nav-active flex flex-col items-center pt-2"><i class="fas fa-gamepad text-lg"></i><span class="text-[8px] font-black uppercase mt-1">Games</span></button>
+        <button onclick="window.location.href='profile.html'" class="text-gray-500 flex flex-col items-center pt-2"><i class="fas fa-user text-lg"></i><span class="text-[8px] font-black uppercase mt-1">Profile</span></button>
+    </div>
+
+    <script>
+        const gamesList = [
+            { name: 'Gold Miner', icon: 'fa-hammer', color: '#eab308', file: 'miner.html', desc: 'Dig for treasures' },
+            { name: 'Snake Pro', icon: 'fa-snake', color: '#22c55e', file: 'snake.html', desc: 'Classic survival' },
+            { name: 'Color Match', icon: 'fa-palette', color: '#ef4444', file: 'color.html', desc: 'Fast reflexes' },
+            { name: 'Memory Boost', icon: 'fa-brain', color: '#a855f7', file: 'memory.html', desc: 'IQ Trainer' },
+            { name: 'Flip & Win', icon: 'fa-clone', color: '#3b82f6', file: 'flip.html', desc: 'Match the cards' },
+            { name: 'Lucky Spin', icon: 'fa-spinner', color: '#f97316', file: 'spin.html', desc: 'Daily luck' },
+            { name: 'Bird Jump', icon: 'fa-dove', color: '#06b6d4', file: 'bird.html', desc: 'Flying challenge' },
+            { name: 'Math Master', icon: 'fa-calculator', color: '#6366f1', file: 'math-master.html', desc: 'Solve & Earn' },
+            { name: 'Tic Tac Toe', icon: 'fa-times', color: '#ec4899', file: 'tictac.html', desc: 'Vs Computer' },
+            { name: 'Space Attack', icon: 'fa-rocket', color: '#0ea5e9', file: 'space.html', desc: 'Galaxy war' },
+            { name: 'Ball Fall', icon: 'fa-volleyball-ball', color: '#14b8a6', file: 'ball.html', desc: 'Physics puzzle' },
+            { name: 'Word Hunt', icon: 'fa-search', color: '#10b981', file: 'word.html', desc: 'Find words' },
+            { name: 'Jump Ninja', icon: 'fa-user-ninja', color: '#f43f5e', file: 'ninja.html', desc: 'Stealth action' },
+            { name: 'Bubble Pop', icon: 'fa-circle', color: '#f59e0b', file: 'bubble.html', desc: 'Relaxing pop' },
+            { name: 'Brick Breaker', icon: 'fa-border-all', color: '#84cc16', file: 'brick.html', desc: 'Arcade style' }
+        ];
+
+        function renderGames() {
+            const container = document.getElementById('gamesContainer');
+            let html = '';
+            gamesList.forEach((g, index) => {
+                html += `
+                <div class="game-card p-5" style="border-left: 4px solid ${g.color}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg" style="background: ${g.color}15; color: ${g.color}"><i class="fas ${g.icon}"></i></div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-white font-black text-[13px] uppercase">${g.name}</h4>
+                                <p class="text-[9px] text-gray-500 font-bold uppercase">${g.desc}</p>
+                                <div class="flex items-center gap-2 pt-1">
+                                    <span class="online-tag"><span class="player-count">${Math.floor(Math.random()*25)+50}</span>K+ Playing</span>
+                                    <span class="win-tag-line">Win Upto 100 Coins</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="playGame('${g.file}')" class="play-btn">Play</button>
+                    </div>
+                </div>`;
+                if ((index + 1) % 5 === 0 && index !== gamesList.length - 1) {
+                    html += `<div class="ad-banner-mid uppercase tracking-[0.2em]"><i class="fas fa-ad mr-2 text-xs"></i> Sponsored Ad Slot</div>`;
+                }
+            });
+            container.innerHTML = html;
+        }
+
+        function playGame(url) {
+            const overlay = document.getElementById('adOverlay'); overlay.style.display = 'flex';
+            let left = 5; document.getElementById('adTimer').innerText = left;
+            let int = setInterval(() => {
+                left--; document.getElementById('adTimer').innerText = left;
+                if(left <= 0) { clearInterval(int); overlay.style.display = 'none'; window.location.href = url; }
+            }, 1000);
+        }
+
+        window.onload = () => { renderGames(); document.getElementById("gameBalance").innerText = (parseInt(localStorage.getItem("coins")) || 0).toLocaleString(); };
+    </script>
+</body>
+</html>

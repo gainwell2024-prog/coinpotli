@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Refer & Earn - CoinPotli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #0a192f; font-family: 'Segoe UI', sans-serif; color: #f1f1f1; }
+        .gold-gradient { background: linear-gradient(135deg, #d4af37, #f1d572, #aa8a2e); }
+        .refer-card { background: #112240; border: 1px solid #233554; border-radius: 24px; }
+        .dashed-box { border: 2px dashed #d4af37; background: rgba(212, 175, 55, 0.05); }
+        .gold-text { color: #d4af37; }
+        .ad-banner { width: 100%; height: 50px; background: #112240; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #4b5563; margin: 20px 0; }
+    </style>
+</head>
+<body class="pb-10">
+
+    <nav class="p-5 flex items-center gap-4">
+        <button onclick="window.location.href='profile.html'" class="text-white"><i class="fas fa-arrow-left"></i></button>
+        <h1 class="text-xl font-black uppercase tracking-tighter">Refer & <span class="gold-text">Earn</span></h1>
+    </nav>
+
+    <div class="flex flex-col items-center py-6">
+        <div class="w-24 h-24 gold-gradient rounded-full flex items-center justify-center shadow-lg mb-4">
+            <i class="fas fa-gift text-[#0a192f] text-4xl"></i>
+        </div>
+        <h2 class="text-xl font-black">Invite & Earn 500 Coins</h2>
+        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">+ Get 25% of their Staking Rewards</p>
+    </div>
+
+    <div class="px-6 mb-6">
+        <div class="refer-card p-6 text-center">
+            <p class="text-[9px] font-black text-gray-400 uppercase mb-3">Your Referral Code</p>
+            <div class="dashed-box p-4 rounded-2xl flex justify-between items-center mb-5">
+                <span id="referCode" class="text-xl font-black text-white tracking-widest">POTLIXXXXXX</span>
+                <button onclick="copyCode()" class="bg-[#d4af37] text-[#0a192f] px-4 py-2 rounded-xl font-black text-[10px] uppercase">Copy</button>
+            </div>
+            <button onclick="shareWhatsApp()" class="w-full bg-[#25d366] text-white py-4 rounded-2xl font-black uppercase text-xs flex items-center justify-center gap-2 shadow-lg">
+                <i class="fab fa-whatsapp text-lg"></i> Share on WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <div class="px-6">
+        <div class="ad-banner uppercase font-black"><i class="fas fa-ad mr-2"></i> AppLovin Sponsored Ad</div>
+    </div>
+
+    <div class="px-6">
+        <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-1">Network Stats</h3>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="refer-card p-5 border-b-4 border-blue-500">
+                <p class="text-[8px] font-black text-gray-500 uppercase">Total Joins</p>
+                <h4 id="totalJoins" class="text-2xl font-black text-white">0</h4>
+            </div>
+            <div class="refer-card p-5 border-b-4 border-yellow-500">
+                <p class="text-[8px] font-black text-gray-500 uppercase">Comm. Earned</p>
+                <h4 id="totalComm" class="text-2xl font-black gold-text">0</h4>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadReferralData() {
+            // Get mobile from localStorage (assuming it was saved during login)
+            const mobile = localStorage.getItem('userMobile') || '0000000000';
+            const lastSix = mobile.slice(-6);
+            const finalCode = "POTLI" + lastSix;
+            
+            document.getElementById('referCode').innerText = finalCode;
+            
+            // Simulating Join Count from LocalStorage
+            const joins = localStorage.getItem('referralCount') || '0';
+            document.getElementById('totalJoins').innerText = joins;
+        }
+
+        function copyCode() {
+            const code = document.getElementById('referCode').innerText;
+            navigator.clipboard.writeText(code);
+            alert("Code Copied!");
+        }
+
+        function shareWhatsApp() {
+            const code = document.getElementById('referCode').innerText;
+            const msg = `Bhai! CoinPotli join kar aur 500 Coins free pao. Mera code use kar: ${code}\nLink: https://coinpotli.com/join`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+        }
+
+        window.onload = loadReferralData;
+    </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gold Miner - CoinPotli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #0a192f; color: #f1f1f1; font-family: sans-serif; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding: 10px; }
+        
+        .gold-text { color: #d4af37; }
+        .royal-card { background: linear-gradient(145deg, #112240, #0a192f); border: 1px solid rgba(212,175,55,0.2); }
+        
+        /* Standard Game Area */
+        #gameWrapper { flex: 1; position: relative; width: 100%; background: radial-gradient(circle at top, #1a2a4a 0%, #0a192f 100%); overflow: hidden; border-radius: 1.5rem; border: 2px solid rgba(212,175,55,0.3); }
+        
+        #hook { position: absolute; top: 0; left: 50%; width: 2px; height: 30px; background: #d4af37; transform-origin: top center; z-index: 10; }
+        #hookHead { position: absolute; bottom: -12px; left: -10px; width: 22px; height: 22px; color: #d4af37; display: flex; align-items: center; justify-content: center; transform: rotate(45deg); border: 2px solid #d4af37; border-radius: 2px 10px 10px 10px; background: #0a192f; }
+        
+        .item-obj { position: absolute; z-index: 5; pointer-events: none; transition: none; }
+        
+        #endPopup { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .v-progress { height: 100%; background: #d4af37; width: 0%; transition: linear; }
+        .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 4px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <nav class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+            <button onclick="window.location.href='dashboard.html'" class="text-white"><i class="fas fa-arrow-left"></i></button>
+            <h1 class="text-sm font-black gold-text italic tracking-tighter uppercase">Gold Miner</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="bg-white/5 px-2 py-1 rounded-lg border border-white/10 flex items-center">
+                <span class="pulse-dot"></span>
+                <p class="text-[8px] font-black text-green-500 uppercase">Server Active</p>
+            </div>
+            <p id="liveCount" class="text-[9px] font-bold text-gray-500 italic">94,210 Online</p>
+        </div>
+    </nav>
+
+    <div class="h-8 bg-white/5 border border-dashed border-white/10 rounded-lg flex items-center justify-center text-[8px] text-gray-600 uppercase tracking-widest mb-2 font-bold">
+        <i class="fas fa-ad mr-2"></i> Sponsored Advertisement
+    </div>
+
+    <div class="flex justify-between items-center px-4 py-2 mb-2 bg-white/5 rounded-xl border border-white/5">
+        <div class="flex flex-col">
+            <span class="text-[7px] text-gray-500 font-bold uppercase">Gold Found</span>
+            <div class="flex items-center gap-1 leading-none">
+                <i class="fas fa-coins gold-text text-[10px]"></i>
+                <span id="score" class="text-base font-black text-white">0</span>
+            </div>
+        </div>
+        <div class="flex flex-col items-end">
+            <span class="text-[7px] text-gray-500 font-bold uppercase">Mining Time</span>
+            <div class="flex items-center gap-1 leading-none">
+                <i class="fas fa-clock text-blue-400 text-[10px]"></i>
+                <span id="timerText" class="text-base font-black text-white">30s</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameWrapper" onclick="deployHook()">
+        <div id="hook">
+            <div id="hookHead">
+                <i class="fas fa-anchor" style="transform: rotate(-45deg); font-size: 10px;"></i>
+            </div>
+        </div>
+        <div id="goldContainer"></div>
+    </div>
+
+    <div class="h-8 flex items-center justify-center">
+        <p class="text-[9px] font-black uppercase tracking-widest italic text-gray-600">Tap Screen to Launch Hook</p>
+    </div>
+
+    <div id="endPopup">
+        <div class="w-full max-w-xs royal-card p-8 rounded-[3rem] text-center border-2 border-gold-btn/30 shadow-2xl">
+            <div id="syncSection">
+                <i class="fas fa-microchip gold-text text-4xl mb-3"></i>
+                <h2 class="text-xl font-black uppercase italic text-white">Syncing Potli</h2>
+                <div class="my-5 bg-white/5 py-4 rounded-3xl border border-white/5 px-6">
+                    <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div id="vProgress" class="v-progress"></div>
+                    </div>
+                    <p id="syncMsg" class="text-[7px] text-gray-500 uppercase mt-2 font-black tracking-widest animate-pulse">Connecting Mining Pool...</p>
+                </div>
+            </div>
+
+            <div id="resultSection" class="hidden">
+                <i class="fas fa-hammer gold-text text-4xl mb-2"></i>
+                <h2 class="text-xl font-black uppercase italic text-white">Mining Done</h2>
+                <div class="my-4 bg-white/5 py-4 rounded-3xl border border-white/5">
+                    <p id="finalCoins" class="text-5xl font-black gold-text">0</p>
+                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Coins Added to Potli</p>
+                </div>
+                
+                <div id="stakeDiv" class="hidden mb-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-left">
+                    <p class="text-[8px] gold-text font-black uppercase mb-1">🔥 1000+ COINS! STAKE NOW!</p>
+                    <button onclick="window.location.href='stake.html'" class="w-full bg-yellow-600/60 text-white py-2 rounded-lg font-black uppercase text-[9px]">Open Staking</button>
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="location.reload()" class="w-full py-4 rounded-xl font-black uppercase text-xs shadow-lg" style="background: linear-gradient(135deg, #d4af37, #aa8a2e); color: #0a192f;">Start Mining</button>
+                    <button onclick="window.location.href='games.html'" class="w-full bg-white/5 text-white py-3 rounded-xl font-black uppercase text-[10px] border border-white/10">More Games</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let score = 0, timeLeft = 30, gameActive = true;
+        let angle = 0, direction = 1, hookState = 'swinging', hookLen = 30, grabbedItem = null;
+        const hook = document.getElementById('hook');
+        const goldContainer = document.getElementById('goldContainer');
+
+        // Fake Online Players
+        setInterval(() => {
+            const count = 90000 + Math.floor(Math.random() * 5000);
+            document.getElementById('liveCount').innerText = `${count.toLocaleString()} Online`;
+        }, 5000);
+
+        function initObjects() {
+            goldContainer.innerHTML = '';
+            const placements = [
+                {val: 20, x: 10, y: 30, type: 'fa-coins', s: 'text-xl'},
+                {val: 0, x: 25, y: 35, type: 'fa-mountain', s: 'text-4xl', c: '#4b5563'},
+                {val: 25, x: 15, y: 80, type: 'fa-coins', s: 'text-2xl'},
+                {val: 0, x: 45, y: 30, type: 'fa-mountain', s: 'text-6xl', c: '#4b5563'},
+                {val: 15, x: 50, y: 55, type: 'fa-coins', s: 'text-xl'},
+                {val: 0, x: 70, y: 25, type: 'fa-mountain', s: 'text-5xl', c: '#4b5563'},
+                {val: 20, x: 85, y: 40, type: 'fa-coins', s: 'text-2xl'},
+                {val: 25, x: 35, y: 85, type: 'fa-coins', s: 'text-2xl'},
+                {val: 0, x: 60, y: 70, type: 'fa-mountain', s: 'text-6xl', c: '#4b5563'},
+                {val: 15, x: 80, y: 85, type: 'fa-coins', s: 'text-3xl'}
+            ];
+            placements.forEach((p, i) => {
+                goldContainer.innerHTML += `<i id="item-${i}" class="fas ${p.type} item-obj ${p.s}" 
+                    style="left:${p.x}%; top:${p.y}%; color:${p.c || '#d4af37'};" data-val="${p.val}"></i>`;
+            });
+        }
+
+        function gameLoop() {
+            if(!gameActive) return;
+            if(hookState === 'swinging') {
+                angle += 2.2 * direction;
+                if(angle > 70 || angle < -70) direction *= -1;
+                hook.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+            } else if(hookState === 'deploying') {
+                hookLen += 7;
+                hook.style.height = hookLen + 'px';
+                checkCollision();
+                if(hookLen > 400) hookState = 'retracting'; 
+            } else if(hookState === 'retracting' || hookState === 'retracting_slow') {
+                hookLen -= (hookState === 'retracting_slow' ? 2 : 7);
+                hook.style.height = hookLen + 'px';
+                if(grabbedItem) {
+                    const headRect = document.getElementById('hookHead').getBoundingClientRect();
+                    const areaRect = goldContainer.getBoundingClientRect();
+                    grabbedItem.style.left = (headRect.left - areaRect.left + 5) + 'px';
+                    grabbedItem.style.top = (headRect.top - areaRect.top + 5) + 'px';
+                }
+                if(hookLen <= 30) {
+                    if(grabbedItem) { grabbedItem.style.display = 'none'; grabbedItem = null; }
+                    hookState = 'swinging';
+                }
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        function deployHook() { if(hookState === 'swinging' && gameActive) hookState = 'deploying'; }
+
+        function checkCollision() {
+            const head = document.getElementById('hookHead').getBoundingClientRect();
+            document.querySelectorAll('.item-obj').forEach(item => {
+                if(item.style.display === 'none' || grabbedItem) return;
+                const rect = item.getBoundingClientRect();
+                if(head.left < rect.right && head.right > rect.left && head.top < rect.bottom && head.bottom > rect.top) {
+                    grabbedItem = item;
+                    let val = parseInt(item.getAttribute('data-val'));
+                    if(val === 0) {
+                        hookState = 'retracting_slow';
+                    } else {
+                        score += val;
+                        document.getElementById('score').innerText = score;
+                        hookState = 'retracting';
+                    }
+                }
+            });
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('endPopup').style.display = 'flex';
+            document.getElementById('finalCoins').innerText = score;
+
+            let currentBalance = parseInt(localStorage.getItem('coins')) || 0;
+            if(currentBalance >= 1000) document.getElementById('stakeDiv').classList.remove('hidden');
+
+            const progress = document.getElementById('vProgress');
+            const msgEl = document.getElementById('syncMsg');
+            const msgs = ["Securing Block...", "Verifying Proof...", "Potli Syncing...", "Success!"];
+            
+            progress.style.transition = "5s linear";
+            setTimeout(() => progress.style.width = "100%", 50);
+            msgs.forEach((m, i) => setTimeout(() => { msgEl.innerText = m; }, i * 1200));
+
+            setTimeout(() => {
+                let current = (parseInt(localStorage.getItem('coins')) || 0) + score;
+                localStorage.setItem('coins', current);
+                document.getElementById('syncSection').classList.add('hidden');
+                document.getElementById('resultSection').classList.remove('hidden');
+            }, 5050);
+        }
+
+        window.onload = () => {
+            initObjects();
+            gameLoop();
+            let timer = setInterval(() => {
+                if(!gameActive) return clearInterval(timer);
+                timeLeft--;
+                document.getElementById('timerText').innerText = timeLeft + 's';
+                if(timeLeft <= 0) endGame();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

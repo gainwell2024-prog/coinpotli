@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory Boost - CoinPotli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #0a192f; color: #f1f1f1; font-family: sans-serif; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding: 10px; }
+        
+        .gold-text { color: #d4af37; }
+        .royal-card { background: linear-gradient(145deg, #112240, #0a192f); border: 1px solid rgba(212,175,55,0.2); }
+        
+        /* Grid Alignment */
+        #gameBoard { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; 
+            width: 100%;
+            max-width: 360px;
+            margin: auto;
+        }
+        
+        .card { aspect-ratio: 1/1.2; perspective: 1000px; cursor: pointer; height: 82px; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.4s; transform-style: preserve-3d; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+        
+        .card-front { background: #112240; border: 1.5px solid rgba(212,175,55,0.2); color: #d4af37; font-weight: 900; }
+        .card-back { background: #1e3a8a; transform: rotateY(180deg); border: 2px solid #d4af37; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        
+        .matched { opacity: 0.15; pointer-events: none; transform: scale(0.9); transition: 0.5s; }
+
+        #endPopup, #adOverlay { display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        #adOverlay { background: rgba(0,0,0,0.98); flex-direction: column; }
+        #endPopup { background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
+        
+        .v-progress { height: 100%; background: #d4af37; width: 0%; transition: linear; }
+        .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 4px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="adOverlay">
+        <div class="w-12 h-12 border-4 border-white/5 border-t-gold-text rounded-full animate-spin mb-4"></div>
+        <p class="gold-text font-black tracking-widest uppercase text-[10px]">Syncing Reward Data...</p>
+        <div id="adTimerOverlay" class="mt-2 text-white font-black text-5xl">5</div>
+    </div>
+
+    <nav class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+            <button onclick="window.location.href='games.html'" class="text-white"><i class="fas fa-arrow-left"></i></button>
+            <h1 class="text-sm font-black gold-text italic tracking-tighter uppercase">Memory Boost</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="bg-white/5 px-2 py-1 rounded-lg border border-white/10 flex items-center">
+                <span class="pulse-dot"></span>
+                <p class="text-[8px] font-black text-green-500 uppercase">Server Active</p>
+            </div>
+            <p id="liveCount" class="text-[9px] font-bold text-gray-500 italic">84,120 Online</p>
+        </div>
+    </nav>
+
+    <div class="h-8 bg-white/5 border border-dashed border-white/10 rounded-lg flex items-center justify-center text-[8px] text-gray-600 uppercase tracking-widest mb-2 font-bold">
+        <i class="fas fa-ad mr-2"></i> Sponsored Advertisement
+    </div>
+
+    <div class="flex justify-between items-center px-4 py-3 mb-3 bg-white/5 rounded-2xl border border-white/5">
+        <div>
+            <span class="text-[7px] text-gray-500 font-bold uppercase block mb-1">Total Reward</span>
+            <div class="flex items-center gap-1.5 leading-none">
+                <i class="fas fa-coins gold-text text-xs"></i>
+                <span id="coinDisplay" class="text-lg font-black text-white">0</span>
+            </div>
+        </div>
+        <div class="text-right">
+            <span class="text-[7px] text-gray-500 font-bold uppercase block mb-1">Brain Power</span>
+            <div id="accuracyText" class="text-lg font-black text-green-400">100%</div>
+        </div>
+    </div>
+
+    <div class="flex-1 flex items-center justify-center overflow-hidden">
+        <div id="gameBoard"></div>
+    </div>
+
+    <div class="h-4"></div>
+
+    <div id="endPopup">
+        <div class="w-full max-w-xs royal-card p-8 rounded-[3rem] text-center border-2 border-gold-btn/30">
+            <div id="syncSection">
+                <i class="fas fa-brain gold-text text-4xl mb-3"></i>
+                <h2 class="text-xl font-black uppercase italic text-white">Validating Score</h2>
+                <div class="my-5 bg-white/5 py-4 rounded-3xl border border-white/5 px-6">
+                    <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div id="vProgress" class="v-progress"></div>
+                    </div>
+                    <p id="syncMsg" class="text-[7px] text-gray-500 uppercase mt-2 font-black tracking-widest animate-pulse">Updating Potli...</p>
+                </div>
+            </div>
+
+            <div id="resultSection" class="hidden">
+                <i class="fas fa-crown gold-text text-5xl mb-3"></i>
+                <h2 class="text-2xl font-black uppercase italic text-white">150 Coins!</h2>
+                <div class="my-4 bg-white/5 py-3 rounded-2xl border border-white/5">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Added to your Wallet</p>
+                </div>
+                <div class="space-y-2">
+                    <button onclick="playAgainWithAd()" class="w-full py-4 rounded-xl font-black uppercase text-xs" style="background: linear-gradient(135deg, #d4af37, #aa8a2e); color: #0a192f;">Play Again</button>
+                    <button onclick="window.location.href='games.html'" class="w-full bg-white/5 text-white py-3 rounded-xl font-black uppercase text-[10px] border border-white/10">More Games</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const symbols = ['🍎', '🍌', '🍇', '🍓', '🍒', '🍍', '🥝', '🍉'];
+        let cards = [...symbols, ...symbols];
+        let flippedCards = [], matchedCount = 0, earnedCoins = 0, isProcessing = false;
+        let accuracy = 100;
+
+        // Fake Players Simulation
+        setInterval(() => {
+            const count = 80000 + Math.floor(Math.random() * 5000);
+            document.getElementById('liveCount').innerText = `${count.toLocaleString()} Online`;
+        }, 4000);
+
+        function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
+        function createBoard() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            const shuffled = shuffle(cards);
+            shuffled.forEach(symbol => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-inner"><div class="card-front">?</div><div class="card-back">${symbol}</div></div>`;
+                card.onclick = () => flipCard(card, symbol);
+                board.appendChild(card);
+            });
+        }
+
+        function updateAccuracy(isMatch) {
+            const accEl = document.getElementById('accuracyText');
+            if(isMatch) {
+                accuracy = Math.min(100, accuracy + 10);
+            } else {
+                accuracy = Math.max(10, accuracy - 15);
+            }
+            accEl.innerText = accuracy + "%";
+            if(accuracy > 70) accEl.className = "text-lg font-black text-green-400";
+            else if(accuracy > 40) accEl.className = "text-lg font-black text-yellow-400";
+            else accEl.className = "text-lg font-black text-red-500";
+        }
+
+        function flipCard(card, symbol) {
+            if (isProcessing || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+            card.classList.add('flipped');
+            flippedCards.push({ card, symbol });
+            
+            if (flippedCards.length === 2) {
+                isProcessing = true;
+                setTimeout(checkMatch, 500);
+            }
+        }
+
+        function checkMatch() {
+            const [c1, c2] = flippedCards;
+            if (c1.symbol === c2.symbol) {
+                c1.card.classList.add('matched');
+                c2.card.classList.add('matched');
+                matchedCount++;
+                earnedCoins += 18.75; 
+                document.getElementById('coinDisplay').innerText = Math.round(earnedCoins);
+                updateAccuracy(true);
+                if (matchedCount === 8) endGame();
+                isProcessing = false;
+            } else {
+                updateAccuracy(false);
+                setTimeout(() => {
+                    c1.card.classList.remove('flipped');
+                    c2.card.classList.remove('flipped');
+                    isProcessing = false;
+                }, 400);
+            }
+            flippedCards = [];
+        }
+
+        function endGame() {
+            document.getElementById("endPopup").style.display = "flex";
+            const progress = document.getElementById('vProgress');
+            const msgEl = document.getElementById('syncMsg');
+            const msgs = ["Securing Brain Data...", "Verifying Match...", "Updating Potli...", "Sync Done!"];
+            
+            progress.style.transition = "5s linear";
+            setTimeout(() => progress.style.width = "100%", 50);
+            msgs.forEach((m, i) => setTimeout(() => { msgEl.innerText = m; }, i * 1200));
+
+            setTimeout(() => {
+                let current = (parseInt(localStorage.getItem('coins')) || 0) + 150;
+                localStorage.setItem('coins', current);
+                document.getElementById('syncSection').classList.add('hidden');
+                document.getElementById('resultSection').classList.remove('hidden');
+            }, 5050);
+        }
+
+        function playAgainWithAd() {
+            document.getElementById('endPopup').style.display = 'none';
+            document.getElementById('adOverlay').style.display = 'flex';
+            let left = 5;
+            let int = setInterval(() => {
+                left--; document.getElementById('adTimerOverlay').innerText = left;
+                if(left <= 0) { clearInterval(int); location.reload(); }
+            }, 1000);
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>

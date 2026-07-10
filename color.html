@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Color Pro - CoinPotli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #0a192f; color: #f1f1f1; font-family: sans-serif; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding: 10px; }
+        
+        .gold-text { color: #d4af37; }
+        .royal-card { background: linear-gradient(145deg, #112240, #0a192f); border: 1px solid rgba(212,175,55,0.2); }
+        
+        /* Game Screen */
+        #gameArea { flex: 1; background: rgba(17,34,64,0.3); border: 2px solid rgba(255,255,255,0.05); border-radius: 24px; position: relative; overflow: hidden; margin-bottom: 12px; }
+        
+        .ball { width: 48px; height: 48px; border-radius: 50%; position: absolute; left: 50%; transform: translateX(-50%); box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 10; border: 3px solid rgba(255,255,255,0.2); }
+        
+        /* BIGGER COLOR BUTTONS */
+        .btn-color { height: 65px; border-radius: 18px; border: 2px solid rgba(255,255,255,0.1); transition: 0.1s; position: relative; overflow: hidden; }
+        .btn-color:active { transform: scale(0.92); filter: brightness(1.2); }
+        .btn-color::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: rgba(255,255,255,0.1); }
+
+        #endPopup, #adOverlay { display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        #adOverlay { background: rgba(0,0,0,0.98); flex-direction: column; }
+        #endPopup { background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
+        
+        .v-progress { height: 100%; background: #d4af37; width: 0%; transition: linear; }
+        .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 4px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="adOverlay">
+        <div class="w-16 h-16 border-4 border-white/5 border-t-gold-text rounded-full animate-spin mb-6"></div>
+        <p class="gold-text font-black tracking-widest uppercase text-xs animate-pulse">Streaming Reward Ad</p>
+        <div id="adTimerOverlay" class="mt-4 text-white font-black text-6xl">5</div>
+        <p class="text-gray-500 text-[10px] mt-8 uppercase font-bold tracking-tighter">Do not close • Syncing Reward</p>
+    </div>
+
+    <nav class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+            <button onclick="window.location.href='dashboard.html'" class="text-white"><i class="fas fa-arrow-left"></i></button>
+            <h1 class="text-sm font-black gold-text italic tracking-tighter uppercase">Color Pro</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="bg-white/5 px-2 py-1 rounded-lg border border-white/10 flex items-center">
+                <span class="pulse-dot"></span>
+                <p class="text-[8px] font-black text-green-500 uppercase">Server Active</p>
+            </div>
+            <p id="liveCount" class="text-[9px] font-bold text-gray-500 italic">102,450 Online</p>
+        </div>
+    </nav>
+
+    <div class="h-8 bg-white/5 border border-dashed border-white/10 rounded-lg flex items-center justify-center text-[8px] text-gray-600 uppercase tracking-widest mb-2 font-bold">
+        <i class="fas fa-ad mr-2"></i> Sponsored Advertisement
+    </div>
+
+    <div class="flex justify-between items-center px-4 py-2 mb-2 bg-white/5 rounded-xl border border-white/5">
+        <div class="flex flex-col">
+            <span class="text-[7px] text-gray-500 font-bold uppercase">Reward</span>
+            <div class="flex items-center gap-1 leading-none">
+                <i class="fas fa-coins gold-text text-[10px]"></i>
+                <span id="score" class="text-base font-black text-white">0</span>
+            </div>
+        </div>
+        <div class="flex flex-col items-end">
+            <span class="text-[7px] text-gray-500 font-bold uppercase">Time Left</span>
+            <div class="flex items-center gap-1 leading-none">
+                <i class="fas fa-clock text-blue-400 text-[10px]"></i>
+                <span id="timerText" class="text-base font-black text-white">45s</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameArea">
+        <div id="fallingBall" class="ball" style="top: -60px;"></div>
+    </div>
+
+    <div class="pb-4 grid grid-cols-5 gap-2">
+        <button onclick="checkColor('red')" class="btn-color bg-red-500 shadow-lg shadow-red-900/40"></button>
+        <button onclick="checkColor('blue')" class="btn-color bg-blue-600 shadow-lg shadow-blue-900/40"></button>
+        <button onclick="checkColor('green')" class="btn-color bg-green-500 shadow-lg shadow-green-900/40"></button>
+        <button onclick="checkColor('yellow')" class="btn-color bg-yellow-400 shadow-lg shadow-yellow-900/40"></button>
+        <button onclick="checkColor('purple')" class="btn-color bg-purple-600 shadow-lg shadow-purple-900/40"></button>
+    </div>
+
+    <div id="endPopup">
+        <div class="w-full max-w-xs royal-card p-8 rounded-[3rem] text-center border-2 border-gold-btn/30 shadow-2xl">
+            <div id="syncSection">
+                <i class="fas fa-bolt gold-text text-4xl mb-3"></i>
+                <h2 class="text-xl font-black uppercase italic text-white">Validating Score</h2>
+                <div class="my-5 bg-white/5 py-4 rounded-3xl border border-white/5 px-6">
+                    <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div id="vProgress" class="v-progress"></div>
+                    </div>
+                    <p id="syncMsg" class="text-[7px] text-gray-500 uppercase mt-2 font-black tracking-widest animate-pulse">Syncing with Potli...</p>
+                </div>
+            </div>
+
+            <div id="resultSection" class="hidden">
+                <i id="endIcon" class="fas fa-heart-broken text-red-500 text-4xl mb-2"></i>
+                <h2 id="endStatus" class="text-xl font-black uppercase italic text-white">Game Over</h2>
+                <div class="my-4 bg-white/5 py-4 rounded-3xl border border-white/5">
+                    <p id="finalCoins" class="text-5xl font-black gold-text">0</p>
+                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Added to Potli</p>
+                </div>
+                
+                <div class="space-y-2">
+                    <button onclick="playAgainWithAd()" class="w-full py-4 rounded-xl font-black uppercase text-xs shadow-lg" style="background: linear-gradient(135deg, #d4af37, #aa8a2e); color: #0a192f;">Play Again</button>
+                    <button onclick="window.location.href='games.html'" class="w-full bg-white/5 text-white py-3 rounded-xl font-black uppercase text-[10px] border border-white/10">More Games</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let score = 0, ballPos = -60, speed = 4.2, timeLeft = 45;
+        let gameActive = true, currentColor = '';
+        const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+        const ball = document.getElementById('fallingBall');
+        const gameArea = document.getElementById('gameArea');
+
+        // Fake Players
+        setInterval(() => {
+            const count = 100000 + Math.floor(Math.random() * 5000);
+            document.getElementById('liveCount').innerText = `${count.toLocaleString()} Online`;
+        }, 5000);
+
+        function resetBall() {
+            ballPos = -60;
+            currentColor = colors[Math.floor(Math.random() * colors.length)];
+            const colorMap = { 
+                'red': 'bg-red-500', 'blue': 'bg-blue-600', 'green': 'bg-green-500', 
+                'yellow': 'bg-yellow-400', 'purple': 'bg-purple-600' 
+            };
+            ball.className = `ball ${colorMap[currentColor]}`;
+            speed += 0.18; // Smooth Difficulty curve
+        }
+
+        function gameLoop() {
+            if(!gameActive) return;
+            ballPos += speed;
+            ball.style.top = ballPos + "px";
+            if (ballPos > gameArea.offsetHeight - 48) {
+                endGame("Game Over!", "fas fa-times-circle text-red-500");
+            } else {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function checkColor(clickedColor) {
+            if(!gameActive) return;
+            if (clickedColor === currentColor) {
+                score += 5;
+                document.getElementById('score').innerText = score;
+                resetBall();
+            } else {
+                endGame("Wrong Color!", "fas fa-bolt text-yellow-500");
+            }
+        }
+
+        function endGame(status, icon) {
+            gameActive = false;
+            document.getElementById('endStatus').innerText = status;
+            document.getElementById('endIcon').className = icon + " text-4xl mb-3";
+            document.getElementById('endPopup').style.display = "flex";
+            document.getElementById('finalCoins').innerText = score;
+
+            const progress = document.getElementById('vProgress');
+            const msgEl = document.getElementById('syncMsg');
+            const msgs = ["Securing Session...", "Checking Patterns...", "Syncing Potli...", "Success!"];
+            
+            progress.style.transition = "5s linear";
+            setTimeout(() => progress.style.width = "100%", 50);
+            msgs.forEach((m, i) => setTimeout(() => { msgEl.innerText = m; }, i * 1200));
+
+            setTimeout(() => {
+                let current = (parseInt(localStorage.getItem('coins')) || 0) + score;
+                localStorage.setItem('coins', current);
+                document.getElementById('syncSection').classList.add('hidden');
+                document.getElementById('resultSection').classList.remove('hidden');
+            }, 5050);
+        }
+
+        function playAgainWithAd() {
+            document.getElementById('endPopup').style.display = 'none';
+            document.getElementById('adOverlay').style.display = 'flex';
+            let left = 5;
+            let int = setInterval(() => {
+                left--; document.getElementById('adTimerOverlay').innerText = left;
+                if(left <= 0) { clearInterval(int); location.reload(); }
+            }, 1000);
+        }
+
+        // Timer
+        let timerInterval = setInterval(() => {
+            if(!gameActive) return;
+            timeLeft--;
+            document.getElementById('timerText').innerText = timeLeft + "s";
+            if(timeLeft <= 0) endGame("Time's Up!", "fas fa-clock text-blue-400");
+        }, 1000);
+
+        resetBall();
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>

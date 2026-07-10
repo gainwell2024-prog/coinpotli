@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lucky Spin - CoinPotli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #0a192f; color: #f1f1f1; font-family: sans-serif; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding: 10px; }
+        .gold-text { color: #d4af37; }
+        .royal-card { background: linear-gradient(145deg, #112240, #0a192f); border: 1px solid rgba(212,175,55,0.2); }
+
+        .wheel-box { position: relative; width: 290px; height: 290px; margin: 20px auto; }
+        #wheelCanvas { border-radius: 50%; border: 8px solid #1e3a8a; box-shadow: 0 0 40px rgba(0,0,0,0.6); transition: transform 4s cubic-bezier(0.2, 0, 0.2, 1); }
+        
+        /* Fixed Pointer Position */
+        .pointer { 
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%); 
+            width: 32px; height: 42px; background: #d4af37; 
+            clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 100;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.9));
+            border-top: 2px solid white;
+        }
+
+        #endPopup { display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
+        .v-progress { height: 100%; background: #d4af37; width: 0%; transition: linear; }
+        .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 4px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <nav class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+            <button onclick="window.location.href='dashboard.html'" class="text-white"><i class="fas fa-arrow-left"></i></button>
+            <h1 class="text-xs font-black gold-text italic tracking-tighter uppercase">Lucky Spin Pro</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="bg-white/5 px-2 py-1 rounded-lg border border-white/10 flex items-center">
+                <span class="pulse-dot"></span>
+                <p class="text-[8px] font-black text-green-500 uppercase">Server Active</p>
+            </div>
+            <p id="liveCount" class="text-[9px] font-bold text-gray-500 italic">31,240 Online</p>
+        </div>
+    </nav>
+
+    <div class="h-8 bg-white/5 border border-dashed border-white/10 rounded-lg flex items-center justify-center text-[8px] text-gray-600 uppercase tracking-widest mb-2 font-bold">
+        <i class="fas fa-ad mr-2"></i> Sponsored Advertisement
+    </div>
+
+    <div class="flex justify-between items-center px-4 py-3 mb-4 bg-white/5 rounded-2xl border border-white/5">
+        <div>
+            <span class="text-[7px] text-gray-500 font-bold uppercase block mb-1">Session Win</span>
+            <div class="flex items-center gap-1.5 font-black"><i class="fas fa-coins gold-text text-xs"></i><span id="rewardDisplay" class="text-lg text-white">0</span></div>
+        </div>
+        <div class="text-right">
+            <span class="text-[7px] text-gray-500 font-bold uppercase block mb-1">Daily Limit</span>
+            <div id="chanceText" class="text-lg font-black text-green-400">10/10</div>
+        </div>
+    </div>
+
+    <div class="wheel-box">
+        <div class="pointer"></div>
+        <canvas id="wheelCanvas" width="290" height="290"></canvas>
+    </div>
+
+    <button id="spinBtn" onclick="startSpin()" class="w-full mt-8 py-5 rounded-2xl font-black uppercase text-sm shadow-2xl transition-all active:scale-95" style="background: linear-gradient(135deg, #d4af37, #aa8a2e); color: #0a192f;">
+        Spin Now
+    </button>
+
+    <div id="endPopup">
+        <div class="w-full max-w-xs royal-card p-8 rounded-[3rem] text-center border-2 border-gold-btn/30 shadow-2xl">
+            <div id="syncSection">
+                <i class="fas fa-sync-alt gold-text text-4xl mb-3 animate-spin"></i>
+                <h2 class="text-xl font-black uppercase italic text-white">Reward Sync</h2>
+                <div class="my-5 bg-white/5 py-4 rounded-3xl border border-white/5 px-6">
+                    <div class="h-1 bg-white/5 rounded-full overflow-hidden"><div id="vProgress" class="v-progress"></div></div>
+                    <p class="text-[7px] text-gray-500 uppercase mt-2 font-black">Connecting to Server...</p>
+                </div>
+            </div>
+
+            <div id="resultSection" class="hidden">
+                <i class="fas fa-crown gold-text text-5xl mb-3"></i>
+                <h2 class="text-3xl font-black uppercase text-white" id="wonAmountText">0</h2>
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-6">Coins Added to Potli</p>
+                <div class="space-y-2">
+                    <button onclick="location.reload()" class="w-full py-4 rounded-xl font-black uppercase text-xs" style="background: linear-gradient(135deg, #d4af37, #aa8a2e); color: #0a192f;">Spin Again</button>
+                    <button onclick="window.location.href='dashboard.html'" class="w-full bg-white/5 text-white py-3 rounded-xl font-black uppercase text-[10px] border border-white/10">More Games</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        // Payout balanced logic: 57% safe range
+        const sectors = [
+            {label: "5", color: "#1e3a8a", weight: 50},
+            {label: "10", color: "#112240", weight: 30},
+            {label: "20", color: "#1e3a8a", weight: 12},
+            {label: "50", color: "#d4af37", weight: 5},
+            {label: "100", color: "#112240", weight: 2},
+            {label: "500", color: "#d4af37", weight: 1}
+        ];
+
+        let currentRotation = 0;
+        let isSpinning = false;
+        let spinsToday = parseInt(localStorage.getItem('dailySpins')) || 0;
+        let maxSpins = 10;
+
+        function updateChances() {
+            document.getElementById('chanceText').innerText = `${maxSpins - spinsToday}/${maxSpins}`;
+            if(spinsToday >= maxSpins) {
+                const btn = document.getElementById('spinBtn');
+                btn.disabled = true; btn.style.opacity = "0.5"; btn.innerText = "No More Spins";
+            }
+        }
+        updateChances();
+
+        function drawWheel() {
+            const arc = 2 * Math.PI / sectors.length;
+            ctx.clearRect(0,0,290,290);
+            sectors.forEach((s, i) => {
+                const ang = arc * i;
+                ctx.beginPath(); ctx.fillStyle = s.color; ctx.moveTo(145, 145);
+                ctx.arc(145, 145, 145, ang, ang + arc); ctx.fill();
+                ctx.save(); ctx.translate(145, 145); ctx.rotate(ang + arc/2);
+                ctx.textAlign="right"; ctx.fillStyle="#fff"; ctx.font="black 16px Arial";
+                ctx.fillText(s.label, 130, 6); ctx.restore();
+            });
+        }
+        drawWheel();
+
+        function getWinner() {
+            let total = sectors.reduce((a, b) => a + b.weight, 0);
+            let r = Math.random() * total;
+            for(let i=0; i<sectors.length; i++) {
+                if(r < sectors[i].weight) return i;
+                r -= sectors[i].weight;
+            }
+            return 0;
+        }
+
+        function startSpin() {
+            if(isSpinning || spinsToday >= maxSpins) return;
+            isSpinning = true;
+            
+            const winIdx = getWinner();
+            const sectorDeg = 360 / sectors.length;
+            
+            // MATH FIX:
+            // 1. We need to find the center of the winning sector.
+            // 2. Adjust for the pointer at the top (which is 270 degrees in canvas logic).
+            const stopAt = 360 - (winIdx * sectorDeg) - (sectorDeg / 2);
+            const totalRotate = (360 * 8) + stopAt; // 8 full spins for excitement
+            
+            currentRotation += totalRotate;
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            spinsToday++;
+            localStorage.setItem('dailySpins', spinsToday);
+            updateChances();
+
+            setTimeout(() => {
+                showResult(sectors[winIdx].label);
+                isSpinning = false;
+            }, 4200);
+        }
+
+        function showResult(val) {
+            document.getElementById('endPopup').style.display = "flex";
+            document.getElementById('wonAmountText').innerText = val + " Coins";
+            document.getElementById('rewardDisplay').innerText = val;
+            
+            const progress = document.getElementById('vProgress');
+            progress.style.transition = "3s linear";
+            setTimeout(() => progress.style.width = "100%", 50);
+
+            setTimeout(() => {
+                let current = (parseInt(localStorage.getItem('coins')) || 0) + parseInt(val);
+                localStorage.setItem('coins', current);
+                document.getElementById('syncSection').classList.add('hidden');
+                document.getElementById('resultSection').classList.remove('hidden');
+            }, 3050);
+        }
+
+        setInterval(() => {
+            const count = Math.floor(Math.random() * 10000) + 25000;
+            document.getElementById('liveCount').innerText = `${count.toLocaleString()} Online`;
+        }, 5000);
+    </script>
+</body>
+</html>
