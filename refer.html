@@ -36,9 +36,16 @@
         <div class="scroll-area">
             
             <!-- Header Nav -->
-            <nav class="p-5 flex items-center gap-4 bg-[#0a192f]/95 backdrop-blur-md sticky top-0 z-40 border-b border-white/5">
-                <button onclick="window.location.href='profile.html'" class="text-gray-400 active:scale-90 transition"><i class="fas fa-chevron-left text-lg"></i></button>
-                <h1 class="text-lg font-black uppercase tracking-tight text-white">Refer & <span class="text-[#d4af37]">Earn</span></h1>
+            <nav class="p-5 flex items-center justify-between bg-[#0a192f]/95 backdrop-blur-md sticky top-0 z-40 border-b border-white/5">
+                <div class="flex items-center gap-4">
+                    <button onclick="window.location.href='profile.html'" class="text-gray-400 active:scale-90 transition"><i class="fas fa-chevron-left text-lg"></i></button>
+                    <h1 class="text-lg font-black uppercase tracking-tight text-white">Refer & <span class="text-[#d4af37]">Earn</span></h1>
+                </div>
+                <!-- Dynamic User Balance Display for Verification Header -->
+                <div class="bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                    <i class="fas fa-coins text-[#d4af37] text-[10px]"></i>
+                    <span id="headerUserBalance" class="text-[10px] font-black text-white">0</span>
+                </div>
             </nav>
 
             <!-- Top Graphics Section -->
@@ -47,7 +54,7 @@
                     <i class="fas fa-gift text-[#0a192f] text-3xl"></i>
                 </div>
                 <h2 class="text-lg font-black text-white">Invite Friends, Get 500 Coins</h2>
-                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">+ Get 25% of their Staking Rewards</p>
+                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">+ Get 5% of their Lifetime Daily Earnings</p>
             </div>
 
             <!-- Referral Code Sharing Card -->
@@ -65,22 +72,22 @@
             </div>
 
             <!-- Upgraded 5% Daily Commission Tracker System -->
-<div class="px-5 mb-5">
-    <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-5">
-        <div class="flex justify-between items-center mb-2">
-            <div>
-                <h4 class="text-white font-black text-xs uppercase tracking-wide">Network Earnings Milestone</h4>
-                <p class="text-[8px] text-gray-500 font-bold uppercase">Get 5% of your referred friends' daily earned coins</p>
+            <div class="px-5 mb-5">
+                <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-5">
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="text-white font-black text-xs uppercase tracking-wide">Network Earnings Milestone</h4>
+                            <p class="text-[8px] text-gray-500 font-bold uppercase">Get 5% of your referred friends' daily earned coins</p>
+                        </div>
+                        <span class="text-[11px] font-black text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-md" id="milestoneRatio">0/10</span>
+                    </div>
+                    
+                    <div class="w-full h-2.5 bg-black/40 rounded-full overflow-hidden border border-white/5 mb-2">
+                        <div id="milestoneProgress" class="progress-bar-fill"></div>
+                    </div>
+                    <p id="milestoneStatusText" class="text-[8px] text-gray-400 font-bold uppercase tracking-wide text-center mt-1">Invite 10 friends to unlock 5% daily passive commission!</p>
+                </div>
             </div>
-            <span class="text-[11px] font-black text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-md" id="milestoneRatio">0/10</span>
-        </div>
-        
-        <div class="w-full h-2.5 bg-black/40 rounded-full overflow-hidden border border-white/5 mb-2">
-            <div id="milestoneProgress" class="progress-bar-fill"></div>
-        </div>
-        <p id="milestoneStatusText" class="text-[8px] text-gray-400 font-bold uppercase tracking-wide text-center mt-1">Invite 10 friends to unlock 5% daily passive commission!</p>
-    </div>
-</div>
 
             <!-- Fixed Banner Ad Frame Placeholders -->
             <div class="w-full flex justify-center px-5 mb-5">
@@ -91,7 +98,10 @@
 
             <!-- Live 10-Slot Network Referral System Container -->
             <div class="px-5 mb-6">
-                <h3 class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-3 px-1">Your 10-Slot Network</h3>
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h3 class="text-[9px] font-black text-gray-500 uppercase tracking-widest">Your 10-Slot Network</h3>
+                    <span class="text-[7.5px] font-black text-amber-400 uppercase tracking-wider bg-amber-400/10 px-2 py-0.5 rounded">Slots 1-2 Free • 3-10 Premium</span>
+                </div>
                 <div id="referralSlotsContainer" class="flex flex-col gap-3">
                     <!-- Slots will inject dynamically via javascript render pipeline logic -->
                 </div>
@@ -112,19 +122,35 @@
                 </div>
             </div>
 
+            <!-- Temporary Test Panel (For Developer Verification Simulation) -->
+            <div class="mx-5 p-3 rounded-xl bg-black/50 border border-white/5 text-center">
+                <p class="text-[8px] text-gray-500 font-bold uppercase mb-2">Dev Testing Panel (Simulate Joins)</p>
+                <div class="flex justify-center gap-2">
+                    <button onclick="localStorage.setItem('referralCount', 1); location.reload();" class="bg-blue-600 text-white font-black text-[8px] uppercase px-2 py-1 rounded">1 Join</button>
+                    <button onclick="localStorage.setItem('referralCount', 4); location.reload();" class="bg-purple-600 text-white font-black text-[8px] uppercase px-2 py-1 rounded">4 Joins</button>
+                    <button onclick="localStorage.setItem('referralCount', 10); location.reload();" class="bg-emerald-600 text-white font-black text-[8px] uppercase px-2 py-1 rounded">10 Joins</button>
+                    <button onclick="localStorage.setItem('unlockedSlots', '[]'); localStorage.setItem('referralCount', 0); location.reload();" class="bg-rose-600 text-white font-black text-[8px] uppercase px-2 py-1 rounded">Reset</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
+        // Init state configurations inside internal database variables
+        let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || { name: "CP#PLAYER", balance: 5000 };
+        if (!userObj.balance && userObj.balance !== 0) userObj.balance = 5000; // Safe check fallback
+
         function loadReferralData() {
-            let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
+            // Setup User Meta Elements
             let namePart = userObj.name ? userObj.name.replace("CP#", "") : "PLAYER";
             let finalCode = "POTLI" + namePart.substring(0, 6);
             document.getElementById('referCode').innerText = finalCode;
+            document.getElementById('headerUserBalance').innerText = userObj.balance.toLocaleString();
             
-            // Core Extraction Parameter for counting total referrals
+            // Core Extraction Parameter for counting total active conversion referrals
             let joins = parseInt(localStorage.getItem('referralCount')) || 0; 
-            if(joins > 10) joins = 10; // Forced capping at maximum 10 layout elements
+            if(joins > 10) joins = 10; 
             
             document.getElementById('totalJoins').innerText = joins;
             document.getElementById('totalComm').innerText = (joins * 500).toLocaleString();
@@ -134,13 +160,13 @@
             document.getElementById('milestoneProgress').style.width = percentage + "%";
             
             if(joins >= 10) {
-                document.getElementById('milestoneStatusText').innerText = "🎉 Milestone Achieved! Mega bonus unlocked.";
+                document.getElementById('milestoneStatusText').innerText = "🎉 5% Daily Passive Commission Active for all slots!";
                 document.getElementById('milestoneStatusText').className = "text-[8px] text-green-400 font-black uppercase text-center mt-1";
             } else {
                 document.getElementById('milestoneStatusText').innerText = `Invite ${10 - joins} more friends to fill the potli!`;
             }
 
-            // Fire Slot Render Dynamic Loop
+            // Fire Slot Premium Render Logic Engine
             renderReferralSlots(joins);
         }
 
@@ -148,7 +174,9 @@
             const container = document.getElementById("referralSlotsContainer");
             container.innerHTML = ""; 
 
-            // Hardcoded structural metrics mirroring high conversion simulation parameters
+            // Get current user premium branch unlocked array mapping profiles
+            let unlockedSlots = JSON.parse(localStorage.getItem("unlockedSlots")) || [];
+
             const simulatedPlayers = [
                 { name: "CP#ALPHA99", coins: "12,450", lastWithdraw: "₹100 UPI", comm24h: "+125" },
                 { name: "CP#GAMER77", coins: "8,900", lastWithdraw: "None", comm24h: "+90" },
@@ -164,52 +192,118 @@
 
             for (let i = 1; i <= 10; i++) {
                 let slotHTML = "";
+                let isFreeSlot = (i <= 2);
+                let isPremiumUnlocked = unlockedSlots.includes(i);
                 
+                // Condition A: Slot Has A Referred Active Player Inside It
                 if (i <= activeCount) {
-                    let player = simulatedPlayers[i - 1];
-                    slotHTML = `
-                        <div class="refer-card p-3.5 rounded-2xl border border-[#d4af37]/30 bg-gradient-to-r from-[#112240]/60 to-[#1a2a4a]/40 flex flex-col gap-2">
-                            <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[9px] font-black text-[#d4af37] bg-[#d4af37]/10 px-1.5 py-0.5 rounded">SLOT 0${i}</span>
-                                    <h4 class="text-[10px] font-black text-white uppercase">${player.name}</h4>
+                    // Check validation rules if slot is premium but not purchased yet
+                    if (!isFreeSlot && !isPremiumUnlocked) {
+                        slotHTML = `
+                            <div class="p-3.5 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-[#1a2035] to-[#111625] flex justify-between items-center shadow-lg">
+                                <div class="flex flex-col gap-0.5">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[8px] font-black text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">SLOT 0${i}</span>
+                                        <span class="text-[9px] font-black text-white uppercase tracking-wider">Hidden Player Joined</span>
+                                    </div>
+                                    <p class="text-[7.5px] text-gray-400 font-medium">Unlock this slot to claim 5% daily passive revenue!</p>
                                 </div>
-                                <span class="text-[8px] text-green-400 font-black uppercase tracking-wider bg-green-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block animate-pulse"></span> Active
-                                </span>
+                                <button onclick="buyPremiumSlot(${i})" class="bg-amber-400 hover:bg-amber-500 text-black px-3 py-2 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1 active:scale-95 transition shadow-md shadow-amber-500/10">
+                                    <i class="fas fa-lock-open text-[8px]"></i> 1,000 C
+                                </button>
                             </div>
-                            <div class="grid grid-cols-3 gap-1 text-center">
-                                <div>
-                                    <p class="text-[7px] text-gray-500 font-bold uppercase">Player Balance</p>
-                                    <p class="text-[9px] font-black text-white">${player.coins} C</p>
+                        `;
+                    } else {
+                        // Slot is either completely free or successfully purchased by user
+                        let player = simulatedPlayers[i - 1];
+                        slotHTML = `
+                            <div class="refer-card p-3.5 rounded-2xl border border-[#d4af37]/30 bg-gradient-to-r from-[#112240]/60 to-[#1a2a4a]/40 flex flex-col gap-2">
+                                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[9px] font-black ${isFreeSlot ? 'text-blue-400 bg-blue-500/10' : 'text-[#d4af37] bg-[#d4af37]/10'} px-1.5 py-0.5 rounded">SLOT 0${i}</span>
+                                        <h4 class="text-[10px] font-black text-white uppercase">${player.name}</h4>
+                                    </div>
+                                    <span class="text-[8px] text-green-400 font-black uppercase tracking-wider bg-green-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block animate-pulse"></span> Active
+                                    </span>
                                 </div>
-                                <div>
-                                    <p class="text-[7px] text-gray-500 font-bold uppercase">24h Withdraw</p>
-                                    <p class="text-[9px] font-black text-blue-400">${player.lastWithdraw}</p>
-                                </div>
-                                <div>
-                                    <p class="text-[7px] text-gray-500 font-bold uppercase">Your Comm (24h)</p>
-                                    <p class="text-[9px] font-black text-[#d4af37]">${player.comm24h} C</p>
+                                <div class="grid grid-cols-3 gap-1 text-center">
+                                    <div>
+                                        <p class="text-[7px] text-gray-500 font-bold uppercase">Player Balance</p>
+                                        <p class="text-[9px] font-black text-white">${player.coins} C</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[7px] text-gray-500 font-bold uppercase">24h Withdraw</p>
+                                        <p class="text-[9px] font-black text-blue-400">${player.lastWithdraw}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[7px] text-gray-500 font-bold uppercase">Your Comm (5%)</p>
+                                        <p class="text-[9px] font-black text-[#d4af37]">${player.comm24h} C</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                } else {
-                    slotHTML = `
-                        <div class="p-4 rounded-2xl border border-white/5 bg-black/20 flex justify-between items-center opacity-40">
-                            <div class="flex items-center gap-3">
-                                <span class="text-[9px] font-black text-gray-500 bg-white/5 px-1.5 py-0.5 rounded">SLOT 0${i}</span>
-                                <div class="flex items-center gap-1.5 text-gray-500">
-                                    <i class="fas fa-lock text-[10px]"></i>
-                                    <span class="text-[9px] font-black uppercase tracking-wider">Empty Slot</span>
+                        `;
+                    }
+                } 
+                // Condition B: Slot Is Completely Empty (Waiting For Referrals)
+                else {
+                    if (!isFreeSlot && !isPremiumUnlocked) {
+                        // Locked Premium Empty Slot Look Layout
+                        slotHTML = `
+                            <div class="p-3.5 rounded-2xl border border-white/5 bg-black/40 flex justify-between items-center opacity-70">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[9px] font-black text-gray-600 bg-white/5 px-1.5 py-0.5 rounded">SLOT 0${i}</span>
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-lock text-[9px] text-gray-600"></i>
+                                        <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500">Premium Slot Locked</span>
+                                    </div>
                                 </div>
+                                <button onclick="buyPremiumSlot(${i})" class="bg-white/5 hover:bg-white/10 text-amber-400 border border-amber-400/20 px-2.5 py-1.5 rounded-lg font-black text-[8px] uppercase tracking-wider active:scale-95 transition">
+                                    Unlock 1k
+                                </button>
                             </div>
-                            <i class="fas fa-user-plus text-gray-600 text-xs"></i>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        // Standard Unlocked Free Empty Slot Look Layout
+                        slotHTML = `
+                            <div class="p-4 rounded-2xl border border-white/5 bg-black/20 flex justify-between items-center opacity-40">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[9px] font-black text-gray-500 bg-white/5 px-1.5 py-0.5 rounded">SLOT 0${i}</span>
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-user-plus text-[9px]"></i>
+                                        <span class="text-[9px] font-black uppercase tracking-wider">Empty Branch</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-link text-gray-600 text-[10px]"></i>
+                            </div>
+                        `;
+                    }
                 }
                 
                 container.innerHTML += slotHTML;
+            }
+        }
+
+        function buyPremiumSlot(slotIndex) {
+            if (userObj.balance < 1000) {
+                alert("Insufficient Coins! Minimum 1,000 coins required to unlock premium network slots.");
+                return;
+            }
+
+            if (confirm(`Unlock Premium Slot 0${slotIndex} for 1,000 Coins?`)) {
+                // Deduct Balance from state logic
+                userObj.balance -= 1000;
+                localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
+
+                // Add to unlocked inventory list array mapping
+                let unlockedSlots = JSON.parse(localStorage.getItem("unlockedSlots")) || [];
+                if (!unlockedSlots.includes(slotIndex)) {
+                    unlockedSlots.push(slotIndex);
+                    localStorage.setItem("unlockedSlots", JSON.stringify(unlockedSlots));
+                }
+
+                alert(`Premium Slot 0${slotIndex} is now unlocked permanently!`);
+                loadReferralData();
             }
         }
 
