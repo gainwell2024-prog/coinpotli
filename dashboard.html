@@ -29,9 +29,8 @@
             transition: width 1s linear; 
         }
 
-        #adOverlay { display: none; position: fixed; inset: 0; background: rgba(6,13,26,0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
-        .loader { border: 4px solid #112240; border-top: 4px solid #d4af37; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* 10-Second Banner Ad Overlay Box */
+        #claimAdOverlay { display: none; position: fixed; inset: 0; background: rgba(6,13,26,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
 
         .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; animation: pulse 1.5s infinite; }
         @keyframes pulse {
@@ -43,11 +42,18 @@
 </head>
 <body>
 
-    <!-- Video Ad Overlay -->
-    <div id="adOverlay">
-        <div class="loader mb-4"></div>
-        <p class="text-[#d4af37] font-black tracking-widest animate-pulse uppercase text-[10px]">Loading Network Ad...</p>
-        <div id="adTimer" class="mt-4 text-white font-black text-4xl">5</div>
+    <!-- 10-Second Captive Banner Ad Box for Claims -->
+    <div id="claimAdOverlay">
+        <p class="text-[#d4af37] font-black tracking-widest uppercase text-[11px] mb-2">Claiming Rewards in...</p>
+        <div id="adTimer" class="text-white font-black text-5xl mb-6">10</div>
+        
+        <!-- Dedicated A-Ads Space inside Timer Modal -->
+        <div class="w-[320px] h-[50px] bg-black/60 rounded-xl border border-white/10 flex items-center justify-center shadow-2xl">
+            <span class="text-[8px] text-yellow-500/80 font-black uppercase tracking-widest p-4 text-center">
+                [ A-ADS BANNER CODE HERE (320x50) ]
+            </span>
+        </div>
+        <p class="text-gray-500 text-[8px] font-bold mt-3 uppercase tracking-wider">Do not close or refresh this screen</p>
     </div>
 
     <div class="app-container">
@@ -62,7 +68,7 @@
                 </div>
             </nav>
 
-            <!-- CP Username Display Tag -->
+            <!-- CP Username Unique Display Tag -->
             <div id="usernameTagContainer" class="hidden px-5 mb-2 text-right">
                 <span id="userNameHeader" class="text-[10px] font-black text-[#d4af37] bg-white/5 border border-white/10 px-3 py-1 rounded-full uppercase tracking-wider"></span>
             </div>
@@ -90,10 +96,10 @@
                 </div>
             </div>
 
-            <!-- SHIFTED: High-Visibility Ad Banner Space (Right under Balance Card) -->
+            <!-- SHIFTED: Main Dashboard Banner (Highly Visible) -->
             <div class="w-full flex justify-center px-5 mb-4">
                 <div class="w-[320px] h-[50px] bg-black/40 rounded-xl border border-white/5 flex items-center justify-center shadow-lg">
-                    <span class="text-[8px] text-gray-600 font-black uppercase tracking-widest">Ad Zone - Premium Placement (320x50)</span>
+                    <span class="text-[8px] text-gray-600 font-black uppercase tracking-widest">[ Dashboard Main Banner (320x50) ]</span>
                 </div>
             </div>
 
@@ -202,18 +208,12 @@
             let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
             let name = userObj.name || "Demo FirePlayer";
             
-            // Checking if default dummy account or empty
             if(name === "Demo FirePlayer" || name.trim() === "") {
                 document.getElementById("profileAlertBanner").classList.remove("hidden");
                 document.getElementById("usernameTagContainer").classList.add("hidden");
             } else {
                 document.getElementById("profileAlertBanner").classList.add("hidden");
                 document.getElementById("usernameTagContainer").classList.remove("hidden");
-                
-                // Enforcing the new CP# tag system format
-                if(!name.startsWith("CP#")) {
-                    name = "CP#" + name;
-                }
                 document.getElementById("userNameHeader").innerText = name.toUpperCase();
             }
         }
@@ -225,9 +225,11 @@
                 return;
             }
             
-            // Cleaning up if user manually adds decorators, then standardizing format
             name = name.replace(/[^A-Z0-9]/g, ""); 
-            let finalCPTag = "CP#" + name;
+            
+            // Fix 1: Appending a 4-digit unique random discriminator to prevent duplicates
+            let randomDigits = Math.floor(1000 + Math.random() * 9000);
+            let finalCPTag = "CP#" + name + randomDigits;
 
             let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
             userObj.name = finalCPTag;
@@ -235,10 +237,11 @@
             updateUI();
         }
 
-        function showAd(callback) {
-            const overlay = document.getElementById('adOverlay');
+        // Fix 2: 10-Second Captive Banner Ad logic for Claim
+        function showAdBannerTimer(callback) {
+            const overlay = document.getElementById('claimAdOverlay');
             overlay.style.display = 'flex';
-            let left = 5;
+            let left = 10;
             document.getElementById('adTimer').innerText = left;
             let int = setInterval(() => {
                 left--;
@@ -256,7 +259,7 @@
             const now = new Date().getTime();
             if (last && (now - last < 3600000)) return;
 
-            showAd(() => {
+            showAdBannerTimer(() => {
                 let currentCoins = parseInt(localStorage.getItem("coins")) || 0;
                 let currentEnergy = localStorage.getItem("energy") !== null ? parseInt(localStorage.getItem("energy")) : 15;
 
