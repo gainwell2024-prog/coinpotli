@@ -66,7 +66,7 @@
                 </div>
             </div>
 
-            <!-- Modern "How It Works" Explanation Section -->
+            <!-- How It Works Section -->
             <div class="px-5 mb-5">
                 <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-5">
                     <h4 class="text-white font-black text-xs uppercase tracking-wide mb-4 text-center border-b border-white/5 pb-2">
@@ -111,7 +111,7 @@
                     <span class="text-[7.5px] font-black text-amber-400 uppercase tracking-wider bg-amber-400/10 px-2 py-0.5 rounded">Slots 1-2 Free • 3-10 Premium</span>
                 </div>
                 <div id="referralSlotsContainer" class="flex flex-col gap-2.5">
-                    <!-- Slots dynamic injection via javascript -->
+                    <!-- Slots dynamic injection via JS -->
                 </div>
             </div>
 
@@ -124,7 +124,7 @@
                     </div>
                     <div class="refer-card p-4 rounded-2xl border-b-2 border-yellow-500/50">
                         <p class="text-[8px] font-black text-gray-500 uppercase tracking-wider">Total Comm. Earned</p>
-                        <h4 id="totalComm" class="text-xl font-black text-[#d4af37] mt-1">0</h4>
+                        <h4 id="totalComm" class="text-xl font-black text-[#d4af37] mt-1">0 C</h4>
                     </div>
                 </div>
             </div>
@@ -166,7 +166,7 @@
                 </div>
             </div>
 
-            <!-- INJECTED AD AD BANNER INSIDE POPUP -->
+            <!-- Sponsored Advertisement -->
             <div class="w-full flex flex-col items-center border-t border-white/5 pt-4">
                 <p class="text-[7px] text-gray-600 font-black uppercase tracking-widest mb-1.5">Sponsored Advertisement</p>
                 <div class="w-[300px] h-[50px] bg-black/50 rounded-lg border border-white/5 flex items-center justify-center">
@@ -182,7 +182,7 @@
         let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || { name: "CP#LALAJI", balance: 5000 };
         if (!userObj.balance && userObj.balance !== 0) userObj.balance = 5000;
 
-        // Simulated data array for testing, will connect to real server API in future backend implementation
+        // Simulated players data array
         const simulatedPlayers = [
             { name: "CP#ALPHA99", coins: "12,450", dailyEarn: "2,500", lastWithdraw: "₹100 UPI", comm24h: "125" },
             { name: "CP#GAMER77", coins: "8,900", dailyEarn: "1,800", lastWithdraw: "None", comm24h: "90" },
@@ -201,17 +201,21 @@
             document.getElementById('referCode').innerText = "POTLI" + namePart.substring(0, 6).toUpperCase();
             document.getElementById('headerUserBalance').innerText = userObj.balance.toLocaleString();
             
-            // Default simulated production count or fetched value
             let joins = parseInt(localStorage.getItem('referralCount'));
             if (isNaN(joins)) { joins = 4; localStorage.setItem('referralCount', 4); }
             if(joins > 10) joins = 10; 
             
             document.getElementById('totalJoins').innerText = joins;
             
-            // Calculate simulated commission total from current active players
             let totalCommSum = 0;
+            let unlockedSlots = JSON.parse(localStorage.getItem("unlockedSlots")) || [];
+
             for(let k = 0; k < joins; k++) {
-                totalCommSum += parseInt(simulatedPlayers[k].comm24h);
+                let slotIndex = k + 1;
+                // Commission sirf unhi active users ka count hoga jo free hain ya unlocked hain
+                if (slotIndex <= 2 || unlockedSlots.includes(slotIndex)) {
+                    totalCommSum += parseInt(simulatedPlayers[k].comm24h.replace(/,/g, ''));
+                }
             }
             document.getElementById('totalComm').innerText = totalCommSum.toLocaleString() + " C";
 
@@ -233,7 +237,7 @@
                         slotHTML = `
                             <div class="p-3 rounded-xl border border-amber-500/30 bg-gradient-to-r from-[#1a2035] to-[#111625] flex justify-between items-center shadow-lg">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[8px] font-black text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">SLOT 0${i}</span>
+                                    <span class="text-[8px] font-black text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">SLOT ${i < 10 ? '0' + i : i}</span>
                                     <span class="text-[9px] font-black text-white uppercase tracking-wider">Hidden Player Joined</span>
                                 </div>
                                 <button onclick="buyPremiumSlot(${i})" class="bg-amber-400 hover:bg-amber-500 text-black px-2.5 py-1 rounded-lg font-black text-[8px] uppercase tracking-wider flex items-center gap-1 active:scale-95 transition">
@@ -246,7 +250,7 @@
                         slotHTML = `
                             <div class="refer-card p-3 rounded-xl border border-white/5 bg-[#112240]/40 flex justify-between items-center">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[8px] font-black ${isFreeSlot ? 'text-blue-400 bg-blue-500/10' : 'text-[#d4af37] bg-[#d4af37]/10'} px-1.5 py-0.5 rounded">SLOT 0${i}</span>
+                                    <span class="text-[8px] font-black ${isFreeSlot ? 'text-blue-400 bg-blue-500/10' : 'text-[#d4af37] bg-[#d4af37]/10'} px-1.5 py-0.5 rounded">SLOT ${i < 10 ? '0' + i : i}</span>
                                     <h4 class="text-[10px] font-black text-white uppercase tracking-wide">${player.name}</h4>
                                 </div>
                                 <button onclick="openModal(${i})" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-2.5 py-1 rounded-lg font-black text-[8px] uppercase tracking-wider active:scale-95 transition flex items-center gap-1">
@@ -260,7 +264,7 @@
                         slotHTML = `
                             <div class="p-3 rounded-xl border border-white/5 bg-black/40 flex justify-between items-center opacity-60">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[8px] font-black text-gray-600 bg-white/5 px-1.5 py-0.5 rounded">SLOT 0${i}</span>
+                                    <span class="text-[8px] font-black text-gray-600 bg-white/5 px-1.5 py-0.5 rounded">SLOT ${i < 10 ? '0' + i : i}</span>
                                     <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500"><i class="fas fa-lock text-[8px] mr-1"></i> Premium Locked</span>
                                 </div>
                                 <button onclick="buyPremiumSlot(${i})" class="bg-white/5 text-amber-400 border border-amber-400/20 px-2.5 py-1 rounded-lg font-black text-[8px] uppercase tracking-wider">
@@ -272,7 +276,7 @@
                         slotHTML = `
                             <div class="p-3 rounded-xl border border-white/5 bg-black/20 flex justify-between items-center opacity-40">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[8px] font-black text-gray-500 bg-white/5 px-1.5 py-0.5 rounded">SLOT 0${i}</span>
+                                    <span class="text-[8px] font-black text-gray-500 bg-white/5 px-1.5 py-0.5 rounded">SLOT ${i < 10 ? '0' + i : i}</span>
                                     <span class="text-[9px] font-medium uppercase tracking-wider text-gray-500">Empty Slot</span>
                                 </div>
                                 <i class="fas fa-link text-gray-600 text-[8px]"></i>
@@ -286,7 +290,7 @@
 
         function openModal(slotIndex) {
             const player = simulatedPlayers[slotIndex - 1];
-            document.getElementById('modalSlotId').innerText = `SLOT 0${slotIndex}`;
+            document.getElementById('modalSlotId').innerText = `SLOT ${slotIndex < 10 ? '0' + slotIndex : slotIndex}`;
             document.getElementById('modalUsername').innerText = player.name;
             document.getElementById('modalTotalCoins').innerText = `${player.coins} C`;
             document.getElementById('modalDailyEarn').innerText = `+${player.dailyEarn} C`;
@@ -306,11 +310,14 @@
 
         function buyPremiumSlot(slotIndex) {
             if (userObj.balance < 1000) { alert("Insufficient Coins!"); return; }
-            if (confirm(`Unlock Premium Slot 0${slotIndex} for 1,000 Coins?`)) {
+            if (confirm(`Unlock Premium Slot ${slotIndex < 10 ? '0' + slotIndex : slotIndex} for 1,000 Coins?`)) {
                 userObj.balance -= 1000;
                 localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
                 let unlockedSlots = JSON.parse(localStorage.getItem("unlockedSlots")) || [];
-                if (!unlockedSlots.includes(slotIndex)) { unlockedSlots.push(slotIndex); localStorage.setItem("unlockedSlots", JSON.stringify(unlockedSlots)); }
+                if (!unlockedSlots.includes(slotIndex)) { 
+                    unlockedSlots.push(slotIndex); 
+                    localStorage.setItem("unlockedSlots", JSON.stringify(unlockedSlots)); 
+                }
                 loadReferralData();
             }
         }
