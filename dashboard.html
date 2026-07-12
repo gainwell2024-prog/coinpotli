@@ -6,6 +6,12 @@
     <title>Dashboard - CoinPotli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Real Firebase Compatibility SDKs Included -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
     <style>
         html, body { background: #060d1a; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         
@@ -96,7 +102,7 @@
                 </div>
             </div>
 
-            <!-- SHIFTED: Main Dashboard Banner (Highly Visible) -->
+            <!-- Main Dashboard Banner -->
             <div class="w-full flex justify-center px-5 mb-4">
                 <div class="w-[320px] h-[50px] bg-black/40 rounded-xl border border-white/5 flex items-center justify-center shadow-lg">
                     <span class="text-[8px] text-gray-600 font-black uppercase tracking-widest">[ Dashboard Main Banner (320x50) ]</span>
@@ -110,11 +116,11 @@
                         <div class="w-9 h-9 bg-orange-500/10 text-orange-400 rounded-xl flex items-center justify-center"><i class="fas fa-bolt text-lg"></i></div>
                         <div>
                             <p class="text-[9px] text-gray-500 font-bold uppercase">Available Energy</p>
-                            <h4 class="text-white text-base font-black"><span id="displayEnergy">15</span> <span class="text-[10px] text-orange-400 font-bold uppercase tracking-wider">ACP</span></h4>
+                            <h4 class="text-white text-base font-black"><span id="displayEnergy">0</span> <span class="text-[10px] text-orange-400 font-bold uppercase tracking-wider">ACP</span></h4>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span id="minerStatusBadge" class="text-[8px] bg-orange-500/10 text-orange-400 px-2 py-1 rounded font-black uppercase tracking-wider">Auto Claim Ready</span>
+                        <span id="minerStatusBadge" class="text-[8px] bg-orange-500/10 text-orange-400 px-2 py-1 rounded font-black uppercase tracking-wider">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -142,7 +148,7 @@
                             <h4 class="text-white font-black text-xs uppercase tracking-wide">ACP CORE v1.0</h4>
                             <p class="text-[9px] text-gray-400 mt-0.5 font-semibold">Consuming <span class="text-orange-400">2 ACP</span> <i class="fas fa-bolt text-[8px]"></i> per cycle</p>
                         </div>
-                        <div id="gearIcon" class="w-9 h-9 bg-yellow-500/5 border border-yellow-500/10 rounded-full flex items-center justify-center text-[#d4af37] animate-spin" style="animation-duration: 5s;">
+                        <div id="gearIcon" class="w-9 h-9 bg-yellow-500/5 border border-yellow-500/10 rounded-full flex items-center justify-center text-[#d4af37]">
                             <i class="fas fa-cog text-base"></i>
                         </div>
                     </div>
@@ -177,38 +183,66 @@
     </div>
 
     <script>
+        // Real Live Config Injected
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVlAP9LhgbQodY",
+            authDomain: "cpin-4cca9.firebaseapp.com",
+            projectId: "cpin-4cca9",
+            storageBucket: "cpin-4cca9.firebasestorage.app",
+            messagingSenderId: "790141628965",
+            appId: "1:790141628965:web:6e6a8d465a095c626585cc"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUser = null;
+        let currentUserRef = null;
+        let userData = {};
+
         let autoMinerInterval = null;
         let cycleTimeLeft = 10;
-        let secureCoinsCheck = 0;
-        let secureEnergyCheck = 0;
+
+        // Firebase Auth State Listener (Full Live Setup)
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                currentUserRef = db.collection("users").doc(user.uid);
+                
+                // Realtime Sync Strategy - Jaise hi DB badlega, UI apne aap update hoga!
+                currentUserRef.onSnapshot((doc) => {
+                    if (doc.exists) {
+                        userData = doc.data();
+                        
+                        // Default Energy set kar rahe hain agar DB me na ho
+                        if (userData.energy === undefined) userData.energy = 15;
+                        
+                        updateUI();
+                        startAutoMiner();
+                    } else {
+                        console.log("User doc not found in Firestore!");
+                    }
+                });
+            } else {
+                // Agar logged in nahi hai, toh login screen par feko
+                window.location.href = 'login.html';
+            }
+        });
 
         function updateUI() {
-            let coins = parseInt(localStorage.getItem("coins")) || 0;
-            let energy = localStorage.getItem("energy") !== null ? parseInt(localStorage.getItem("energy")) : 15;
-            
-            if(coins < secureCoinsCheck || energy > secureEnergyCheck + 50) {
-                coins = secureCoinsCheck;
-                energy = secureEnergyCheck;
-                localStorage.setItem("coins", coins);
-                localStorage.setItem("energy", energy);
-            }
+            document.getElementById("totalCoins").innerText = (userData.balance || 0).toLocaleString();
+            document.getElementById("inrValue").innerText = ((userData.balance || 0) / 100).toFixed(2);
+            document.getElementById("displayEnergy").innerText = userData.energy;
 
-            document.getElementById("totalCoins").innerText = coins.toLocaleString();
-            document.getElementById("inrValue").innerText = (coins / 100).toFixed(2);
-            document.getElementById("displayEnergy").innerText = energy;
-
-            secureCoinsCheck = coins;
-            secureEnergyCheck = energy;
-
-            checkHourlyStatus();
             checkUserProfileState();
+            checkHourlyStatus();
         }
 
         function checkUserProfileState() {
-            let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
-            let name = userObj.name || "Demo FirePlayer";
-            
-            if(name === "Demo FirePlayer" || name.trim() === "") {
+            let name = userData.username || "";
+            // Agar default ya random tag ho toh edit karne ka chance do
+            if(name.startsWith("CP#PLAYER") || name.trim() === "") {
                 document.getElementById("profileAlertBanner").classList.remove("hidden");
                 document.getElementById("usernameTagContainer").classList.add("hidden");
             } else {
@@ -218,26 +252,22 @@
             }
         }
 
-        function saveUsername() {
+        async function saveUsername() {
             let name = document.getElementById("newUsernameInput").value.trim().toUpperCase();
             if(name.length < 3) {
                 alert("Name must be at least 3 characters!");
                 return;
             }
-            
             name = name.replace(/[^A-Z0-9]/g, ""); 
-            
-            // Fix 1: Appending a 4-digit unique random discriminator to prevent duplicates
             let randomDigits = Math.floor(1000 + Math.random() * 9000);
             let finalCPTag = "CP#" + name + randomDigits;
 
-            let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
-            userObj.name = finalCPTag;
-            localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
-            updateUI();
+            if (currentUserRef) {
+                await currentUserRef.update({ username: finalCPTag });
+                alert("Username tag updated successfully!");
+            }
         }
 
-        // Fix 2: 10-Second Captive Banner Ad logic for Claim
         function showAdBannerTimer(callback) {
             const overlay = document.getElementById('claimAdOverlay');
             overlay.style.display = 'flex';
@@ -254,30 +284,30 @@
             }, 1000);
         }
 
-        function claimHourly() {
-            const last = localStorage.getItem('lastHourly');
+        async function claimHourly() {
+            if (!currentUserRef) return;
+            
             const now = new Date().getTime();
-            if (last && (now - last < 3600000)) return;
+            const last = userData.lastHourly || 0;
+            if (now - last < 3600000) return; // 1 ghanta check
 
-            showAdBannerTimer(() => {
-                let currentCoins = parseInt(localStorage.getItem("coins")) || 0;
-                let currentEnergy = localStorage.getItem("energy") !== null ? parseInt(localStorage.getItem("energy")) : 15;
+            showAdBannerTimer(async () => {
+                let currentCoins = userData.balance || 0;
+                let currentEnergy = userData.energy !== undefined ? userData.energy : 15;
 
-                secureCoinsCheck = currentCoins + 10;
-                secureEnergyCheck = currentEnergy + 50;
-
-                localStorage.setItem("coins", secureCoinsCheck);
-                localStorage.setItem("energy", secureEnergyCheck);
-                localStorage.setItem('lastHourly', now);
-                
-                updateUI();
-                startAutoMiner(); 
+                // Live Firestore Update
+                await currentUserRef.update({
+                    balance: currentCoins + 10,
+                    energy: currentEnergy + 50,
+                    lastHourly: now
+                });
             });
         }
 
         function checkHourlyStatus() {
-            const last = localStorage.getItem('lastHourly');
+            const last = userData.lastHourly || 0;
             if(!last) return;
+            
             const diff = 3600000 - (new Date().getTime() - last);
             if(diff > 0) {
                 const m = Math.floor(diff / 60000);
@@ -295,8 +325,8 @@
         function startAutoMiner() {
             if (autoMinerInterval) return;
 
-            autoMinerInterval = setInterval(() => {
-                let currentEnergy = localStorage.getItem("energy") !== null ? parseInt(localStorage.getItem("energy")) : 15;
+            autoMinerInterval = setInterval(async () => {
+                let currentEnergy = userData.energy !== undefined ? userData.energy : 15;
                 
                 if (currentEnergy >= 2) {
                     cycleTimeLeft--;
@@ -311,13 +341,16 @@
                         cycleTimeLeft = 10;
                         document.getElementById("minerProgress").style.width = "0%";
 
-                        let coins = parseInt(localStorage.getItem("coins")) || 0;
-                        secureEnergyCheck = currentEnergy - 2;
-                        secureCoinsCheck = coins + 5;
+                        let currentCoins = userData.balance || 0;
+                        
+                        // Miner cycle end hone par sidha live DB update push karo
+                        clearInterval(autoMinerInterval); // Pause interval during async write
+                        autoMinerInterval = null;
 
-                        localStorage.setItem("energy", secureEnergyCheck);
-                        localStorage.setItem("coins", secureCoinsCheck);
-                        updateUI();
+                        await currentUserRef.update({
+                            energy: currentEnergy - 2,
+                            balance: currentCoins + 5
+                        });
                     }
                 } else {
                     document.getElementById("minerProgress").style.width = "0%";
@@ -331,9 +364,7 @@
         }
 
         window.onload = () => {
-            updateUI();
             setInterval(checkHourlyStatus, 1000);
-            startAutoMiner();
         };
     </script>
 </body>
