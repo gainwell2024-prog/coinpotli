@@ -6,6 +6,12 @@
     <title>My Profile - CoinPotli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Real Firebase Compatibility SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
     <style>
         html, body { background: #060d1a; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         
@@ -25,7 +31,6 @@
         .nav-fixed { position: absolute; bottom: 0; width: 100%; max-width: 425px; background: #0a192f; border-top: 1px solid rgba(255,255,255,0.1); }
         .dp-border { border: 2px solid #d4af37; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
         
-        /* Pulsing Dot Animation */
         .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; animation: pulse 1.5s infinite; }
         @keyframes pulse {
             0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
@@ -62,14 +67,14 @@
                     </div>
                     
                     <div class="flex items-center gap-2 mb-1 z-10">
-                        <h3 class="text-xl font-black text-white tracking-wide" id="userName">CP#PLAYER0000</h3>
+                        <h3 class="text-xl font-black text-white tracking-wide" id="userName">Loading...</h3>
                         <button id="editBtn" onclick="toggleEditMode()" class="text-gray-500 text-xs active:scale-90"><i class="fas fa-pen"></i></button>
                     </div>
                     <p class="text-[8px] text-[#d4af37] bg-[#d4af37]/10 border border-[#d4af37]/20 px-2.5 py-0.5 rounded-md font-black uppercase tracking-widest">Active Member</p>
                 </div>
             </div>
 
-            <!-- Interactive Inline Name Modifier (Hidden by default) -->
+            <!-- Interactive Inline Name Modifier -->
             <div id="editBox" class="hidden px-5 mb-5">
                 <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
                     <h4 class="text-[10px] font-black text-white uppercase tracking-wider mb-2">Change Account GamerTag</h4>
@@ -124,12 +129,12 @@
                     <i class="fas fa-chevron-right text-gray-600 text-[9px] mr-1"></i>
                 </div>
 
-                <div onclick="processLogout()" class="menu-item p-4 flex justify-between items-center border-l-4 border-red-500/40">
+                <div onclick="processLogout()" class="menu-item p-4 flex justify-between items-center border-l-4 border-red-500/40 cursor-pointer">
                     <div class="flex items-center gap-4">
                         <div class="w-9 h-9 bg-red-500/10 text-red-400 rounded-xl flex items-center justify-center"><i class="fas fa-power-off text-sm"></i></div>
                         <div>
                             <h4 class="text-red-400 font-black text-xs uppercase tracking-wide">Secure Logout</h4>
-                            <p class="text-[8px] text-gray-600 font-bold uppercase">Clear local testing session</p>
+                            <p class="text-[8px] text-gray-600 font-bold uppercase">End firebase session</p>
                         </div>
                     </div>
                 </div>
@@ -154,61 +159,81 @@
     </div>
 
     <script>
-        function syncProfileData() {
-            let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
-            let currentName = userObj.name || "CP#PLAYER" + Math.floor(1000 + Math.random() * 9000);
-            
-            // Checking structure uniformity
-            if(!currentName.startsWith("CP#")) {
-                currentName = "CP#" + currentName.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        // Real Live Config Injected (Matching Dashboard)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVlAP9LhgbQodY",
+            authDomain: "cpin-4cca9.firebaseapp.com",
+            projectId: "cpin-4cca9",
+            storageBucket: "cpin-4cca9.firebasestorage.app",
+            messagingSenderId: "790141628965",
+            appId: "1:790141628965:web:6e6a8d465a095c626585cc"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUserRef = null;
+
+        // Listen for Firebase Auth State
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUserRef = db.collection("users").doc(user.uid);
+                
+                // Real-time Firestore sync for Username
+                currentUserRef.onSnapshot((doc) => {
+                    if (doc.exists) {
+                        let userData = doc.data();
+                        let currentName = userData.username || "CP#PLAYER" + Math.floor(1000 + Math.random() * 9000);
+                        
+                        document.getElementById('userName').innerText = currentName.toUpperCase();
+                    }
+                });
+            } else {
+                // Not logged in -> Redirect to index/login page
+                window.location.href = 'index.html';
             }
-            
-            document.getElementById('userName').innerText = currentName;
-            
-            // Save fallback default structural tag if initial pull was clean raw
-            if(!userObj.name) {
-                userObj.name = currentName;
-                localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
-            }
-        }
+        });
 
         function toggleEditMode() {
             let box = document.getElementById("editBox");
             box.classList.toggle("hidden");
         }
 
-        function updateGamerTag() {
+        async function updateGamerTag() {
             let typedName = document.getElementById("editNameInput").value.trim().toUpperCase();
             if(typedName.length < 3) {
                 alert("Tag value must contain at least 3 valid chars!");
                 return;
             }
             
-            // Scrub matching structural parameters
+            // Format check & clean
             typedName = typedName.replace(/[^A-Z0-9]/g, "");
             let uniqueDigits = Math.floor(1000 + Math.random() * 9000);
             let finalCombinedTag = "CP#" + typedName + uniqueDigits;
 
-            let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
-            userObj.name = finalCombinedTag;
-            localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
-            
-            document.getElementById("editBox").classList.add("hidden");
-            document.getElementById("editNameInput").value = "";
-            syncProfileData();
-        }
-
-        function processLogout() {
-            if(confirm('Are you sure you want to end session and wipe configurations?')) {
-                localStorage.removeItem('coinpotli_test_user');
-                localStorage.removeItem('coins');
-                localStorage.removeItem('energy');
-                localStorage.removeItem('lastHourly');
-                window.location.href = 'index.html'; 
+            if (currentUserRef) {
+                try {
+                    await currentUserRef.update({ username: finalCombinedTag });
+                    document.getElementById("editBox").classList.add("hidden");
+                    document.getElementById("editNameInput").value = "";
+                } catch (error) {
+                    alert("Error updating tag: " + error.message);
+                }
             }
         }
 
-        window.onload = syncProfileData;
+        function processLogout() {
+            if(confirm('Are you sure you want to log out from CoinPotli?')) {
+                auth.signOut().then(() => {
+                    // Local Storage fallback clears if any old data remains
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    alert("Error Logging out: " + error.message);
+                });
+            }
+        }
     </script>
 </body>
 </html>
