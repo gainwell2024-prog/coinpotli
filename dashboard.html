@@ -43,7 +43,7 @@
 </head>
 <body>
 
-    <!-- Mandatory Video Ad Overlay to Unlock Rewards -->
+    <!-- Video Ad Overlay -->
     <div id="adOverlay">
         <div class="loader mb-4"></div>
         <p class="text-[#d4af37] font-black tracking-widest animate-pulse uppercase text-[10px]">Loading Network Ad...</p>
@@ -62,16 +62,18 @@
                 </div>
             </nav>
 
+            <!-- CP Username Display Tag -->
             <div id="usernameTagContainer" class="hidden px-5 mb-2 text-right">
-                <span id="userNameHeader" class="text-[10px] font-bold text-gray-400 uppercase tracking-wider"></span>
+                <span id="userNameHeader" class="text-[10px] font-black text-[#d4af37] bg-white/5 border border-white/10 px-3 py-1 rounded-full uppercase tracking-wider"></span>
             </div>
 
             <!-- Profile Alert Banner -->
             <div id="profileAlertBanner" class="hidden px-5 mb-4">
                 <div class="bg-gradient-to-r from-orange-500/20 to-red-500/10 border border-orange-500/30 rounded-2xl p-4">
-                    <h4 class="text-xs font-black text-white uppercase tracking-wider mb-1">Set Custom Username</h4>
-                    <input type="text" id="newUsernameInput" placeholder="ENTER USERNAME" class="w-full bg-black/40 rounded-xl px-3 py-2 text-[10px] text-white font-bold uppercase border border-white/10 mb-2 focus:outline-none focus:border-orange-500/40">
-                    <button onclick="saveUsername()" class="w-full bg-orange-500 text-white font-black text-[10px] py-2 rounded-xl uppercase tracking-widest transition active:scale-95">Update Profile</button>
+                    <h4 class="text-xs font-black text-white uppercase tracking-wider mb-1">Link Account Username</h4>
+                    <p class="text-[9px] text-gray-400 mb-2 font-medium">Create your unique CP account tag below</p>
+                    <input type="text" id="newUsernameInput" placeholder="ENTER NAME (e.g. AMAN)" class="w-full bg-black/40 rounded-xl px-3 py-2 text-[10px] text-white font-bold uppercase border border-white/10 mb-2 focus:outline-none focus:border-orange-500/40">
+                    <button onclick="saveUsername()" class="w-full bg-orange-500 text-white font-black text-[10px] py-2 rounded-xl uppercase tracking-widest transition active:scale-95">Link with CP Tag</button>
                 </div>
             </div>
 
@@ -88,7 +90,14 @@
                 </div>
             </div>
 
-            <!-- Energy Status Bar (Most Important) -->
+            <!-- SHIFTED: High-Visibility Ad Banner Space (Right under Balance Card) -->
+            <div class="w-full flex justify-center px-5 mb-4">
+                <div class="w-[320px] h-[50px] bg-black/40 rounded-xl border border-white/5 flex items-center justify-center shadow-lg">
+                    <span class="text-[8px] text-gray-600 font-black uppercase tracking-widest">Ad Zone - Premium Placement (320x50)</span>
+                </div>
+            </div>
+
+            <!-- Energy Status Bar -->
             <div class="px-5 mb-4">
                 <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex justify-between items-center">
                     <div class="flex items-center gap-3">
@@ -104,7 +113,7 @@
                 </div>
             </div>
 
-            <!-- RESTORED: Hourly Claim Faucet Trigger Section -->
+            <!-- Faucet Energy Claim -->
             <div class="px-5 mb-5">
                 <button id="hourlyBtn" onclick="claimHourly()" class="w-full bg-white/5 p-4 rounded-2xl border border-white/5 flex justify-between items-center transition active:scale-95">
                     <div class="flex items-center gap-3">
@@ -140,13 +149,6 @@
                         <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Next Payout In:</span>
                         <span id="cycleTimerDisplay" class="text-xs font-black tracking-widest text-white bg-black/30 px-2 py-0.5 rounded-md border border-white/5">10s</span>
                     </div>
-                </div>
-            </div>
-
-            <!-- Ad Space -->
-            <div class="w-full flex justify-center px-5 mb-6">
-                <div class="w-[320px] h-[50px] bg-black/40 rounded-xl border border-white/5 flex items-center justify-center">
-                    <span class="text-[8px] text-gray-600 font-black uppercase tracking-widest">Ad Zone (320x50)</span>
                 </div>
             </div>
         </div>
@@ -200,24 +202,35 @@
             let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
             let name = userObj.name || "Demo FirePlayer";
             
+            // Checking if default dummy account or empty
             if(name === "Demo FirePlayer" || name.trim() === "") {
                 document.getElementById("profileAlertBanner").classList.remove("hidden");
                 document.getElementById("usernameTagContainer").classList.add("hidden");
             } else {
                 document.getElementById("profileAlertBanner").classList.add("hidden");
                 document.getElementById("usernameTagContainer").classList.remove("hidden");
-                document.getElementById("userNameHeader").innerText = `@${name.toUpperCase()}`;
+                
+                // Enforcing the new CP# tag system format
+                if(!name.startsWith("CP#")) {
+                    name = "CP#" + name;
+                }
+                document.getElementById("userNameHeader").innerText = name.toUpperCase();
             }
         }
 
         function saveUsername() {
-            let name = document.getElementById("newUsernameInput").value.trim();
+            let name = document.getElementById("newUsernameInput").value.trim().toUpperCase();
             if(name.length < 3) {
-                alert("Username must be at least 3 characters!");
+                alert("Name must be at least 3 characters!");
                 return;
             }
+            
+            // Cleaning up if user manually adds decorators, then standardizing format
+            name = name.replace(/[^A-Z0-9]/g, ""); 
+            let finalCPTag = "CP#" + name;
+
             let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
-            userObj.name = name;
+            userObj.name = finalCPTag;
             localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
             updateUI();
         }
