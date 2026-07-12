@@ -2,124 +2,213 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>My Profile - CoinPotli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #0a192f; font-family: 'Segoe UI', sans-serif; color: #f1f1f1; -webkit-tap-highlight-color: transparent; }
-        .profile-card { background: #112240; border: 1px solid #233554; border-radius: 30px; }
-        .gold-text { color: #d4af37; }
-        .menu-item { background: #112240; border-radius: 20px; transition: 0.3s; margin-bottom: 12px; border: 1px solid #233554; }
-        .menu-item:active { transform: scale(0.98); background: #1a2a4a; }
-        .applovin-banner { width: 100%; height: 50px; background: #112240; border: 1px dashed #d4af37/30; display: flex; align-items: center; justify-content: center; border-radius: 12px; color: #4b5563; font-size: 10px; font-weight: bold; margin-bottom: 20px; }
-        .dp-border { border: 3px solid #d4af37; padding: 3px; }
-        /* Dashboard Jaisi Active Nav Styling */
-        .nav-active { color: #d4af37; border-top: 2px solid #d4af37; }
+        html, body { background: #060d1a; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        
+        .app-container {
+            width: 100%; max-width: 425px; height: 100%; margin: 0 auto;
+            background: radial-gradient(circle at top, #1a2a4a 0%, #0a192f 100%);
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 90px; scrollbar-width: none; }
+        .scroll-area::-webkit-scrollbar { display: none; }
+        
+        .profile-card { background: rgba(17, 34, 64, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.15); }
+        .menu-item { background: rgba(17, 34, 64, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; transition: 0.2s; }
+        .menu-item:active { transform: scale(0.98); background: rgba(17, 34, 64, 0.6); }
+        
+        .nav-fixed { position: absolute; bottom: 0; width: 100%; max-width: 425px; background: #0a192f; border-top: 1px solid rgba(255,255,255,0.1); }
+        .dp-border { border: 2px solid #d4af37; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+        
+        /* Pulsing Dot Animation */
+        .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
     </style>
 </head>
-<body class="pb-32">
+<body>
 
-    <div class="p-6 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <button onclick="window.location.href='dashboard.html'" class="text-gray-400"><i class="fas fa-chevron-left text-xl"></i></button>
-            <h2 class="text-xl font-black uppercase tracking-widest text-white">My <span class="gold-text">Profile</span></h2>
-        </div>
-        <i class="fas fa-cog text-gray-600"></i>
-    </div>
-
-    <div class="px-5 mb-6">
-        <div class="profile-card p-6 flex flex-col items-center text-center">
-            <div class="relative mb-4">
-                <div class="w-24 h-24 bg-[#0a192f] rounded-full dp-border overflow-hidden flex items-center justify-center">
-                    <i class="fas fa-user-ninja text-4xl gold-text"></i>
-                </div>
-                <div class="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-4 border-[#112240]"></div>
-            </div>
+    <div class="app-container">
+        <!-- Scrollable content -->
+        <div class="scroll-area">
             
-            <div class="flex items-center gap-2 mb-1">
-                <h3 class="text-2xl font-black text-white" id="userName">User_492</h3>
-                <button id="editBtn" onclick="editName()" class="text-gray-500 text-xs hover:text-white"><i class="fas fa-pen"></i></button>
+            <!-- Top Header Status -->
+            <div class="p-5 flex items-center justify-between bg-[#0a192f]/95 backdrop-blur-md sticky top-0 z-40">
+                <div class="flex items-center gap-4">
+                    <button onclick="window.location.href='dashboard.html'" class="text-gray-400 active:scale-90 transition"><i class="fas fa-chevron-left text-lg"></i></button>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-white">My <span class="text-[#d4af37]">Profile</span></h2>
+                </div>
+                <div class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                    <div class="pulse-dot"></div>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-white/90">Verified</span>
+                </div>
             </div>
-            <p class="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em]" id="userStatus">Verified Member</p>
-        </div>
-    </div>
 
-    <div class="px-5">
-        <div class="applovin-banner uppercase"><i class="fas fa-ad mr-2 text-xs"></i> Sponsored Ad</div>
-    </div>
-
-    <div class="px-5">
-        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-1">Account Management</p>
-
-        <div onclick="window.location.href='wallet.html'" class="menu-item p-5 flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <i class="fas fa-wallet gold-text text-xl"></i>
-                <div><h4 class="text-white font-black text-xs uppercase">Wallet</h4><p class="text-[8px] text-gray-500 font-bold uppercase">Balance & Withdrawal</p></div>
+            <!-- Profile Overview Card -->
+            <div class="px-5 mb-5 mt-2">
+                <div class="profile-card rounded-[2.5rem] p-6 flex flex-col items-center text-center relative overflow-hidden">
+                    <div class="relative mb-3">
+                        <div class="w-20 h-20 bg-[#0a192f] rounded-full dp-border overflow-hidden flex items-center justify-center">
+                            <i class="fas fa-user-ninja text-3xl text-[#d4af37]"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 mb-1 z-10">
+                        <h3 class="text-xl font-black text-white tracking-wide" id="userName">CP#PLAYER0000</h3>
+                        <button id="editBtn" onclick="toggleEditMode()" class="text-gray-500 text-xs active:scale-90"><i class="fas fa-pen"></i></button>
+                    </div>
+                    <p class="text-[8px] text-[#d4af37] bg-[#d4af37]/10 border border-[#d4af37]/20 px-2.5 py-0.5 rounded-md font-black uppercase tracking-widest">Active Member</p>
+                </div>
             </div>
-            <i class="fas fa-chevron-right text-gray-600 text-[10px]"></i>
-        </div>
 
-        <div onclick="window.location.href='refer.html'" class="menu-item p-5 flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <i class="fas fa-gift gold-text text-xl"></i>
-                <div><h4 class="text-white font-black text-xs uppercase">Refer & Earn</h4><p class="text-[8px] text-gray-500 font-bold uppercase">Earn Coins Per Friend</p></div>
+            <!-- Interactive Inline Name Modifier (Hidden by default) -->
+            <div id="editBox" class="hidden px-5 mb-5">
+                <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                    <h4 class="text-[10px] font-black text-white uppercase tracking-wider mb-2">Change Account GamerTag</h4>
+                    <div class="flex gap-2">
+                        <input type="text" id="editNameInput" placeholder="ENTER NEW NAME" class="flex-1 bg-black/40 rounded-xl px-3 py-2 text-[10px] text-white font-bold uppercase border border-white/10 focus:outline-none focus:border-yellow-500/40">
+                        <button onclick="updateGamerTag()" class="bg-[#d4af37] text-[#0a192f] font-black text-[10px] px-4 rounded-xl uppercase tracking-wider transition active:scale-95">Save</button>
+                    </div>
+                </div>
             </div>
-            <i class="fas fa-chevron-right text-gray-600 text-[10px]"></i>
-        </div>
 
-        <div onclick="window.location.href='history.html'" class="menu-item p-5 flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <i class="fas fa-list-ul gold-text text-xl"></i>
-                <div><h4 class="text-white font-black text-xs uppercase">Potli Log</h4><p class="text-[8px] text-gray-500 font-bold uppercase">Transaction History</p></div>
+            <!-- Dashboard Matching Ad Banner Placement -->
+            <div class="w-full flex justify-center px-5 mb-5">
+                <div class="w-[320px] h-[50px] bg-black/40 rounded-xl border border-white/5 flex items-center justify-center shadow-md">
+                    <span class="text-[8px] text-gray-600 font-black uppercase tracking-widest">[ Profile Banner Ad (320x50) ]</span>
+                </div>
             </div>
-            <i class="fas fa-chevron-right text-gray-600 text-[10px]"></i>
-        </div>
 
-        <div onclick="logout()" class="menu-item p-5 flex justify-between items-center border-l-4 border-red-500/50">
-            <div class="flex items-center gap-4">
-                <i class="fas fa-power-off text-red-500 text-xl"></i>
-                <div><h4 class="text-red-500 font-black text-xs uppercase">Logout</h4><p class="text-[8px] text-gray-600 font-bold uppercase">Exit & Clear Session</p></div>
+            <!-- Settings Menu Links -->
+            <div class="px-5">
+                <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-3 px-1">Account Management</p>
+
+                <div onclick="window.location.href='wallet.html'" class="menu-item p-4 flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-4">
+                        <div class="w-9 h-9 bg-[#d4af37]/10 text-[#d4af37] rounded-xl flex items-center justify-center"><i class="fas fa-wallet text-sm"></i></div>
+                        <div>
+                            <h4 class="text-white font-black text-xs uppercase tracking-wide">Wallet</h4>
+                            <p class="text-[8px] text-gray-500 font-bold uppercase">Balance & Instant Withdrawal</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-600 text-[9px] mr-1"></i>
+                </div>
+
+                <div onclick="window.location.href='refer.html'" class="menu-item p-4 flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-4">
+                        <div class="w-9 h-9 bg-green-500/10 text-green-400 rounded-xl flex items-center justify-center"><i class="fas fa-gift text-sm"></i></div>
+                        <div>
+                            <h4 class="text-white font-black text-xs uppercase tracking-wide">Refer & Earn</h4>
+                            <p class="text-[8px] text-gray-500 font-bold uppercase">Earn Premium Coins Per Friend</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-600 text-[9px] mr-1"></i>
+                </div>
+
+                <div onclick="window.location.href='history.html'" class="menu-item p-4 flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-4">
+                        <div class="w-9 h-9 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center"><i class="fas fa-list-ul text-sm"></i></div>
+                        <div>
+                            <h4 class="text-white font-black text-xs uppercase tracking-wide">Potli Transaction Log</h4>
+                            <p class="text-[8px] text-gray-500 font-bold uppercase">All historical dynamic tracking</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-600 text-[9px] mr-1"></i>
+                </div>
+
+                <div onclick="processLogout()" class="menu-item p-4 flex justify-between items-center border-l-4 border-red-500/40">
+                    <div class="flex items-center gap-4">
+                        <div class="w-9 h-9 bg-red-500/10 text-red-400 rounded-xl flex items-center justify-center"><i class="fas fa-power-off text-sm"></i></div>
+                        <div>
+                            <h4 class="text-red-400 font-black text-xs uppercase tracking-wide">Secure Logout</h4>
+                            <p class="text-[8px] text-gray-600 font-bold uppercase">Clear local testing session</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="fixed bottom-0 left-0 right-0 bg-[#112240]/95 backdrop-blur-md border-t border-white/5 p-4 flex justify-around items-center z-50">
-        <button onclick="window.location.href='dashboard.html'" class="text-gray-500 flex flex-col items-center pt-2"><i class="fas fa-home text-lg"></i><span class="text-[8px] font-black uppercase mt-1">Home</span></button>
-        <button onclick="window.location.href='games.html'" class="text-gray-500 flex flex-col items-center pt-2"><i class="fas fa-gamepad text-lg"></i><span class="text-[8px] font-black uppercase mt-1">Games</span></button>
-        <button class="nav-active flex flex-col items-center pt-2"><i class="fas fa-user text-lg"></i><span class="text-[8px] font-black uppercase mt-1">Profile</span></button>
+        <!-- Fixed Bottom Tab Bar -->
+        <div class="nav-fixed p-3 flex justify-around items-center z-50">
+            <button onclick="window.location.href='dashboard.html'" class="text-gray-500 flex flex-col items-center">
+                <i class="fas fa-home text-base"></i>
+                <span class="text-[8px] font-black uppercase mt-1">Home</span>
+            </button>
+            <button onclick="window.location.href='games.html'" class="text-gray-500 flex flex-col items-center">
+                <i class="fas fa-gamepad text-base"></i>
+                <span class="text-[8px] font-black uppercase mt-1">Games</span>
+            </button>
+            <button class="text-[#d4af37] flex flex-col items-center">
+                <i class="fas fa-user text-base"></i>
+                <span class="text-[8px] font-black uppercase mt-1">Profile</span>
+            </button>
+        </div>
     </div>
 
     <script>
-        function loadData() {
-            const savedName = localStorage.getItem('userName') || "User_492";
-            document.getElementById('userName').innerText = savedName;
+        function syncProfileData() {
+            let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
+            let currentName = userObj.name || "CP#PLAYER" + Math.floor(1000 + Math.random() * 9000);
             
-            if(localStorage.getItem('nameEdited') === 'true') {
-                document.getElementById('editBtn').style.display = 'none';
+            // Checking structure uniformity
+            if(!currentName.startsWith("CP#")) {
+                currentName = "CP#" + currentName.toUpperCase().replace(/[^A-Z0-9]/g, "");
+            }
+            
+            document.getElementById('userName').innerText = currentName;
+            
+            // Save fallback default structural tag if initial pull was clean raw
+            if(!userObj.name) {
+                userObj.name = currentName;
+                localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
             }
         }
 
-        function editName() {
-            const newName = prompt("Enter your name (One-time edit):");
-            if(newName && newName.trim().length > 2) {
-                localStorage.setItem('userName', newName.trim());
-                localStorage.setItem('nameEdited', 'true');
-                document.getElementById('userName').innerText = newName;
-                document.getElementById('editBtn').style.display = 'none';
-                alert("Name saved successfully!");
-            }
+        function toggleEditMode() {
+            let box = document.getElementById("editBox");
+            box.classList.toggle("hidden");
         }
 
-        function logout() {
-            if(confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userName');
-                localStorage.removeItem('nameEdited');
+        function updateGamerTag() {
+            let typedName = document.getElementById("editNameInput").value.trim().toUpperCase();
+            if(typedName.length < 3) {
+                alert("Tag value must contain at least 3 valid chars!");
+                return;
+            }
+            
+            // Scrub matching structural parameters
+            typedName = typedName.replace(/[^A-Z0-9]/g, "");
+            let uniqueDigits = Math.floor(1000 + Math.random() * 9000);
+            let finalCombinedTag = "CP#" + typedName + uniqueDigits;
+
+            let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
+            userObj.name = finalCombinedTag;
+            localStorage.setItem("coinpotli_test_user", JSON.stringify(userObj));
+            
+            document.getElementById("editBox").classList.add("hidden");
+            document.getElementById("editNameInput").value = "";
+            syncProfileData();
+        }
+
+        function processLogout() {
+            if(confirm('Are you sure you want to end session and wipe configurations?')) {
+                localStorage.removeItem('coinpotli_test_user');
+                localStorage.removeItem('coins');
+                localStorage.removeItem('energy');
+                localStorage.removeItem('lastHourly');
                 window.location.href = 'index.html'; 
             }
         }
 
-        window.onload = loadData;
+        window.onload = syncProfileData;
     </script>
 </body>
 </html>
