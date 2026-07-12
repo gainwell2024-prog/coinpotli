@@ -2,88 +2,133 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Refer & Earn - CoinPotli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #0a192f; font-family: 'Segoe UI', sans-serif; color: #f1f1f1; }
+        html, body { background: #060d1a; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        .app-container { width: 100%; max-width: 425px; height: 100%; margin: 0 auto; background: radial-gradient(circle at top, #1a2a4a 0%, #0a192f 100%); display: flex; flex-direction: column; position: relative; }
+        .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 40px; scrollbar-width: none; }
+        .scroll-area::-webkit-scrollbar { display: none; }
         .gold-gradient { background: linear-gradient(135deg, #d4af37, #f1d572, #aa8a2e); }
-        .refer-card { background: #112240; border: 1px solid #233554; border-radius: 24px; }
+        .refer-card { background: rgba(17, 34, 64, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.15); }
         .dashed-box { border: 2px dashed #d4af37; background: rgba(212, 175, 55, 0.05); }
-        .gold-text { color: #d4af37; }
-        .ad-banner { width: 100%; height: 50px; background: #112240; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #4b5563; margin: 20px 0; }
+        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #aa8a2e, #d4af37); box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); transition: width 0.5s ease-out; }
     </style>
 </head>
-<body class="pb-10">
+<body>
 
-    <nav class="p-5 flex items-center gap-4">
-        <button onclick="window.location.href='profile.html'" class="text-white"><i class="fas fa-arrow-left"></i></button>
-        <h1 class="text-xl font-black uppercase tracking-tighter">Refer & <span class="gold-text">Earn</span></h1>
-    </nav>
+    <div class="app-container">
+        <div class="scroll-area">
+            
+            <!-- Header Nav -->
+            <nav class="p-5 flex items-center gap-4 bg-[#0a192f]/95 backdrop-blur-md sticky top-0 z-40">
+                <button onclick="window.location.href='profile.html'" class="text-gray-400 active:scale-90 transition"><i class="fas fa-chevron-left text-lg"></i></button>
+                <h1 class="text-lg font-black uppercase tracking-tight text-white">Refer & <span class="text-[#d4af37]">Earn</span></h1>
+            </nav>
 
-    <div class="flex flex-col items-center py-6">
-        <div class="w-24 h-24 gold-gradient rounded-full flex items-center justify-center shadow-lg mb-4">
-            <i class="fas fa-gift text-[#0a192f] text-4xl"></i>
-        </div>
-        <h2 class="text-xl font-black">Invite & Earn 500 Coins</h2>
-        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">+ Get 25% of their Staking Rewards</p>
-    </div>
-
-    <div class="px-6 mb-6">
-        <div class="refer-card p-6 text-center">
-            <p class="text-[9px] font-black text-gray-400 uppercase mb-3">Your Referral Code</p>
-            <div class="dashed-box p-4 rounded-2xl flex justify-between items-center mb-5">
-                <span id="referCode" class="text-xl font-black text-white tracking-widest">POTLIXXXXXX</span>
-                <button onclick="copyCode()" class="bg-[#d4af37] text-[#0a192f] px-4 py-2 rounded-xl font-black text-[10px] uppercase">Copy</button>
+            <!-- Top Graphics -->
+            <div class="flex flex-col items-center py-5">
+                <div class="w-20 h-20 gold-gradient rounded-full flex items-center justify-center shadow-2xl mb-3">
+                    <i class="fas fa-gift text-[#0a192f] text-3xl"></i>
+                </div>
+                <h2 class="text-lg font-black text-white">Invite Friends, Get 500 Coins</h2>
+                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">+ Get 25% of their Staking Rewards</p>
             </div>
-            <button onclick="shareWhatsApp()" class="w-full bg-[#25d366] text-white py-4 rounded-2xl font-black uppercase text-xs flex items-center justify-center gap-2 shadow-lg">
-                <i class="fab fa-whatsapp text-lg"></i> Share on WhatsApp
-            </button>
-        </div>
-    </div>
 
-    <div class="px-6">
-        <div class="ad-banner uppercase font-black"><i class="fas fa-ad mr-2"></i> AppLovin Sponsored Ad</div>
-    </div>
+            <!-- Referral Card Details -->
+            <div class="px-5 mb-5">
+                <div class="refer-card p-5 rounded-[2rem] text-center">
+                    <p class="text-[9px] font-black text-gray-400 uppercase mb-2 tracking-wider">Your Referral Code</p>
+                    <div class="dashed-box p-3 rounded-xl flex justify-between items-center mb-4">
+                        <span id="referCode" class="text-lg font-black text-white tracking-widest pl-2">POTLIXXXXXX</span>
+                        <button onclick="copyCode()" class="bg-[#d4af37] text-[#0a192f] px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider active:scale-95 transition">Copy</button>
+                    </div>
+                    <button onclick="shareWhatsApp()" class="w-full bg-[#25d366] text-white py-3.5 rounded-xl font-black uppercase text-[11px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition">
+                        <i class="fab fa-whatsapp text-base"></i> Share on WhatsApp
+                    </button>
+                </div>
+            </div>
 
-    <div class="px-6">
-        <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-1">Network Stats</h3>
-        <div class="grid grid-cols-2 gap-3">
-            <div class="refer-card p-5 border-b-4 border-blue-500">
-                <p class="text-[8px] font-black text-gray-500 uppercase">Total Joins</p>
-                <h4 id="totalJoins" class="text-2xl font-black text-white">0</h4>
+            <!-- 10 Person Milestone Track Counter System -->
+            <div class="px-5 mb-5">
+                <div class="bg-white/5 border border-white/5 rounded-[2rem] p-5">
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="text-white font-black text-xs uppercase tracking-wide">Network Milestone</h4>
+                            <p class="text-[8px] text-gray-500 font-bold uppercase">Invite 10 friends for Mega Bonus</p>
+                        </div>
+                        <span class="text-[11px] font-black text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-md" id="milestoneRatio">0/10</span>
+                    </div>
+                    
+                    <div class="w-full h-2.5 bg-black/40 rounded-full overflow-hidden border border-white/5 mb-2">
+                        <div id="milestoneProgress" class="progress-bar-fill"></div>
+                    </div>
+                    <p id="milestoneStatusText" class="text-[8px] text-gray-400 font-bold uppercase tracking-wide text-center mt-1">Invite 10 more to complete</p>
+                </div>
             </div>
-            <div class="refer-card p-5 border-b-4 border-yellow-500">
-                <p class="text-[8px] font-black text-gray-500 uppercase">Comm. Earned</p>
-                <h4 id="totalComm" class="text-2xl font-black gold-text">0</h4>
+
+            <!-- Ad Space -->
+            <div class="w-full flex justify-center px-5 mb-5">
+                <div class="w-[320px] h-[50px] bg-black/40 rounded-xl border border-white/5 flex items-center justify-center shadow-md">
+                    <span class="text-[8px] text-gray-600 font-black uppercase tracking-widest">[ A-ADS BANNER CODE (320x50) ]</span>
+                </div>
             </div>
+
+            <!-- Network Stats -->
+            <div class="px-5">
+                <h3 class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-3 px-1">Network Stats</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="refer-card p-4 rounded-2xl border-b-2 border-blue-500/50">
+                        <p class="text-[8px] font-black text-gray-500 uppercase tracking-wider">Total Joins</p>
+                        <h4 id="totalJoins" class="text-xl font-black text-white mt-1">0</h4>
+                    </div>
+                    <div class="refer-card p-4 rounded-2xl border-b-2 border-yellow-500/50">
+                        <p class="text-[8px] font-black text-gray-500 uppercase tracking-wider">Comm. Earned</p>
+                        <h4 id="totalComm" class="text-xl font-black text-[#d4af37] mt-1">0</h4>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
         function loadReferralData() {
-            // Get mobile from localStorage (assuming it was saved during login)
-            const mobile = localStorage.getItem('userMobile') || '0000000000';
-            const lastSix = mobile.slice(-6);
-            const finalCode = "POTLI" + lastSix;
-            
+            let userObj = JSON.parse(localStorage.getItem("coinpotli_test_user")) || {};
+            let namePart = userObj.name ? userObj.name.replace("CP#", "") : "PLAYER";
+            let finalCode = "POTLI" + namePart.substring(0, 6);
             document.getElementById('referCode').innerText = finalCode;
             
-            // Simulating Join Count from LocalStorage
-            const joins = localStorage.getItem('referralCount') || '0';
+            // 10 Person Logic Tracker System
+            let joins = parseInt(localStorage.getItem('referralCount')) || 0; 
+            if(joins > 10) joins = 10; // Cap visual milestone max
+            
             document.getElementById('totalJoins').innerText = joins;
+            document.getElementById('totalComm').innerText = (joins * 500).toLocaleString();
+            
+            document.getElementById('milestoneRatio').innerText = `${joins}/10`;
+            let percentage = (joins / 10) * 100;
+            document.getElementById('milestoneProgress').style.width = percentage + "%";
+            
+            if(joins >= 10) {
+                document.getElementById('milestoneStatusText').innerText = "🎉 Milestone Achieved! Mega bonus unlocked.";
+                document.getElementById('milestoneStatusText').className = "text-[8px] text-green-400 font-black uppercase text-center mt-1";
+            } else {
+                document.getElementById('milestoneStatusText').innerText = `Invite ${10 - joins} more friends to fill the potli!`;
+            }
         }
 
         function copyCode() {
             const code = document.getElementById('referCode').innerText;
             navigator.clipboard.writeText(code);
-            alert("Code Copied!");
+            alert("Referral link copied!");
         }
 
         function shareWhatsApp() {
             const code = document.getElementById('referCode').innerText;
-            const msg = `Bhai! CoinPotli join kar aur 500 Coins free pao. Mera code use kar: ${code}\nLink: https://coinpotli.com/join`;
+            const msg = `Bhai! CoinPotli App open kar aur 500 Coins free claim kar. Mera verification tag use kar: ${code}\nLink: https://coinpotli.com/join`;
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
         }
 
