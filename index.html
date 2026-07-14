@@ -3,246 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CoinPotli - Dashboard</title>
+    <title>Login - CoinPotli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Firebase Legacy/Compat SDKs (Easy to use in single HTML file) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Real Firebase Compatibility SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
     <style>
-        html, body { background: #060d1a; margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Segoe UI', sans-serif; color: white; }
-        .app-container { width: 100%; max-width: 425px; min-height: 100vh; margin: 0 auto; background: radial-gradient(circle at top, #1a2a4a 0%, #0a192f 100%); display: flex; flex-direction: column; }
+        html, body { 
+            background: #060d1a; 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 425px; 
+            height: 100%;
+            max-height: 900px; 
+            background: radial-gradient(circle at top, #1a2a4a 0%, #0a192f 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2.5rem 1.5rem;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        @media (min-width: 426px) {
+            .app-container {
+                border-radius: 40px;
+                height: 85vh;
+                border: 4px solid rgba(212, 175, 55, 0.2);
+                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+            }
+        }
+
+        .glass-card { 
+            background: rgba(17, 34, 64, 0.6); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(212,175,55,0.15); 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); 
+        }
+        
+        .gold-btn { background: linear-gradient(135deg, #d4af37 0%, #f1d572 50%, #aa8a2e 100%); color: #0a192f; }
+        .flag-icon { width: 16px; height: 11px; display: inline-block; background: linear-gradient(#FF9933, #FFF, #128807); border-radius: 1px; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="app-container p-5">
-        <!-- Header Nav -->
-        <nav class="flex items-center justify-between bg-[#0a192f]/95 backdrop-blur-md py-4 border-b border-white/5 mb-6">
-            <div>
-                <h1 class="text-xl font-black uppercase tracking-tight">Coin<span class="text-[#d4af37]">Potli</span></h1>
-                <p id="userEmailDisplay" class="text-[10px] text-gray-400">Loading account...</p>
-            </div>
-            <div class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl flex items-center gap-2">
-                <i class="fas fa-coins text-[#d4af37] text-sm"></i>
-                <!-- UI Balance Element -->
-                <span id="headerUserBalance" class="text-sm font-black text-white">0</span>
-            </div>
-        </nav>
-
-        <!-- Test Simulation Section -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-5 text-center mb-6">
-            <h3 class="font-bold text-sm mb-2">Test Coin Earning</h3>
-            <p class="text-xs text-gray-400 mb-4">Niche buttons par click karke coins earn karo. UI par instantly badhega, par Firebase par load nahi padega.</p>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="simulateEarning(100)" class="bg-amber-500 hover:bg-amber-600 text-black font-black text-xs py-3 rounded-xl active:scale-95 transition">
-                    +100 Coins
-                </button>
-                <button onclick="simulateEarning(500)" class="bg-yellow-500 hover:bg-yellow-600 text-black font-black text-xs py-3 rounded-xl active:scale-95 transition">
-                    +500 Coins
-                </button>
-            </div>
-        </div>
-
-        <!-- Sync Status Logs for Testing -->
-        <div class="bg-black/30 border border-white/5 rounded-2xl p-4">
-            <h4 class="text-[10px] uppercase font-black tracking-wider text-gray-400 mb-2">Live System Status</h4>
-            <div id="statusLogs" class="text-[11px] text-emerald-400 font-mono space-y-1">
-                <div>System initialized...</div>
-            </div>
-        </div>
+    <div class="app-container">
         
-        <!-- Logout Button -->
-        <button onclick="handleLogout()" class="mt-auto mb-4 w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition">
-            Log Out Account
-        </button>
+        <!-- Brand Logo Section -->
+        <div class="text-center mt-4">
+            <div class="w-20 h-20 gold-btn rounded-[2rem] mx-auto flex items-center justify-center shadow-[0_0_40px_rgba(212,175,55,0.2)] mb-4 animate-bounce" style="animation-duration: 3s;">
+                <i class="fas fa-coins text-3xl"></i>
+            </div>
+            <h1 class="text-4xl font-black text-white tracking-tighter uppercase italic">Coin<span class="text-[#d4af37]">Potli</span></h1>
+            <div class="flex items-center justify-center mt-2 opacity-80">
+                <span class="flag-icon"></span>
+                <p class="text-[9px] text-gray-300 font-black uppercase tracking-[0.2em]">India's Most Trusted Rewards Hub</p>
+            </div>
+        </div>
+
+        <!-- Google Login Card Frame -->
+        <div class="w-full glass-card rounded-[2.5rem] p-6 mb-4">
+            <div id="loginSection" class="space-y-4">
+                <div class="text-center">
+                    <h2 class="text-white font-black text-xs uppercase tracking-widest">Sign In / Sign Up</h2>
+                    <p id="loadingStatus" class="text-gray-500 text-[9px] font-bold mt-1">SECURE 1-CLICK INSTANT ACCESS</p>
+                </div>
+                
+                <!-- Main Login Trigger Button -->
+                <button id="loginBtn" onclick="continueWithGoogle()" class="w-full gold-btn py-4 rounded-2xl font-black uppercase tracking-[0.1em] text-xs shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <i class="fab fa-google text-sm"></i> Continue with Google
+                </button>
+
+                <!-- Premium Referral Code Box -->
+                <div class="pt-2">
+                    <div class="relative bg-black/30 rounded-xl border border-white/5 p-1 flex items-center">
+                        <span class="text-gray-500 pl-3 text-xs"><i class="fas fa-user-plus"></i></span>
+                        <input type="text" id="referCodeInput" placeholder="REFER CODE (OPTIONAL)" class="w-full bg-transparent text-white text-xs font-black uppercase tracking-widest px-3 py-2 focus:outline-none placeholder-gray-600">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Safety Footer Area Labels -->
+        <div class="text-center space-y-1 pb-2">
+            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">No Investment Required • 100% Free Play to Earn</p>
+            <p class="text-[8px] text-gray-600 font-medium">V1.0.2 • © CoinPotli Network Inc.</p>
+        </div>
+
     </div>
 
-    <!-- CORE JAVASCRIPT LOGIC -->
     <script>
-        // ==========================================
-        // 1. FIREBASE INITIALIZATION
-        // ==========================================
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVlAP9LhgbQodY",
+            authDomain: "cpin-4cca9.firebaseapp.com",
+            projectId: "cpin-4cca9",
+            storageBucket: "cpin-4cca9.firebasestorage.app",
+            messagingSenderId: "790141628965",
+            appId: "1:790141628965:web:6e6a8d465a095c626585cc"
         };
         
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Global Application State
-        let userObj = {
-            uid: null,
-            email: null,
-            balance: 0
-        };
-        
-        let inactivityTimer;
-        const ONE_HOUR = 60 * 60 * 1000; // 1 Hour Milliseconds me
-        const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 Minutes Inactivity limit
+        // URL parsing for automatic refer code injection
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (refCode) {
+                const inputField = document.getElementById('referCodeInput');
+                inputField.value = refCode.toUpperCase();
+                inputField.disabled = true; 
+                inputField.style.opacity = "0.6";
+            }
+            
+            // Mobile Optimization: Handle redirect results back smoothly
+            checkRedirectResult();
+        }
 
-        // ==========================================
-        // 2. GMAIL AUTH DETECTION (ALL DEVICES SYNC)
-        // ==========================================
+        // Handle Firebase Auth Session Lifecycle
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // PC aur Mobile par agar same Gmail hai, toh same UID yahan detect hogi
-                userObj.uid = user.uid;
-                userObj.email = user.email;
-                
-                document.getElementById('userEmailDisplay').innerText = user.email;
-                logStatus("Logged in successfully. Syncing database...");
-
-                // Database se latest balance load karein (Jo PC par earn kiya tha wo mobile par aa jayega)
-                await loadDataFromFirebase();
-                
-                // Active user event listeners start karein (Inactivity check karne ke liye)
-                startInactivityTracker();
-            } else {
-                logStatus("No session found. Redirecting to login...");
-                // Agar login nahi hai toh login page par bhejne ke liye niche wali line uncomment karein:
-                // window.location.href = "login.html";
+                const statusLabel = document.getElementById('loadingStatus');
+                statusLabel.innerText = "AUTHENTICATED! SYNCING STATE...";
+                await syncUserNode(user);
             }
         });
 
-        // Firebase se fresh data pull karna (Only on app load)
-        async function loadDataFromFirebase() {
+        function continueWithGoogle() {
+            const enteredReferCode = document.getElementById('referCodeInput').value.trim().toUpperCase();
+            const statusLabel = document.getElementById('loadingStatus');
+            const loginBtn = document.getElementById('loginBtn');
+
+            statusLabel.innerText = "CONNECTING GOOGLE GATEWAY...";
+            loginBtn.disabled = true;
+            loginBtn.style.opacity = "0.5";
+
+            // Saved temporary code context to preserve logic through redirect
+            if(enteredReferCode) {
+                localStorage.setItem("temp_pending_ref", enteredReferCode);
+            }
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            // Fixed popup restriction crash on mobile browsers
+            auth.signInWithRedirect(provider);
+        }
+
+        async function checkRedirectResult() {
             try {
-                let doc = await db.collection("users").doc(userObj.uid).get();
-                if (doc.exists) {
-                    userObj.balance = doc.data().balance || 0;
-                    logStatus(`Data fetched from cloud. Balance: ${userObj.balance}`);
-                } else {
-                    // New user initialization
-                    userObj.balance = 0;
-                    await db.collection("users").doc(userObj.uid).set({ balance: userObj.balance });
-                    logStatus("New user profile created on Firebase.");
+                const result = await auth.getRedirectResult();
+                if (result && result.user) {
+                    await syncUserNode(result.user);
                 }
-                updateUI();
             } catch (error) {
-                console.error("Error loading data:", error);
-                logStatus("Failed to fetch cloud data. Using backup.");
+                resetLoginButton("LOGIN FAILED. RETRY AGAIN.");
+                alert("Authentication issue: " + error.message);
             }
         }
 
-        // ==========================================
-        // 3. COIN EARNING & LOCAL BUFFER LOGIC
-        // ==========================================
-        function simulateEarning(amount) {
-            if (!userObj.uid) return;
+        async function syncUserNode(user) {
+            const statusLabel = document.getElementById('loadingStatus');
+            statusLabel.innerText = "VERIFYING SECURE CLOUD...";
 
-            // Step A: Screen par balance instantly badhao (Real-time update)
-            userObj.balance += amount;
-            updateUI();
-            logStatus(`Earned +${amount} locally. (UI Updated)`);
+            const userRef = db.collection("users").doc(user.uid);
+            const doc = await userRef.get();
 
-            // Step B: LocalStorage me backup data rakho taaki sudden app crash pe safe rahe
-            localStorage.setItem("coinpotli_backup_bal_" + userObj.uid, userObj.balance);
+            if (!doc.exists) {
+                const savedRefCode = localStorage.getItem("temp_pending_ref") || "NONE";
+                const cleanUsername = user.displayName ? "CP#" + user.displayName.split(' ')[0].toUpperCase() : "CP#PLAYER";
+                const generatedReferCode = "POTLI" + user.uid.substring(0, 5).toUpperCase();
 
-            // Step C: Check karein kya 1 ghanta ho gaya database update ko?
-            checkPeriodicSync();
-        }
+                const freshUserData = {
+                    uid: user.uid,
+                    username: cleanUsername,
+                    balance: 500, // New users welcome gift coins
+                    referral_code: generatedReferCode,
+                    referred_by: savedRefCode,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
 
-        // ==========================================
-        // 4. SMART FIREBASE SYNC CONTROLLER (LOAD SAVER)
-        // ==========================================
-        
-        // Condition 1: Har 1 Ghante me Auto Sync Check
-        function checkPeriodicSync() {
-            const now = Date.now();
-            const lastSync = localStorage.getItem("coinpotli_last_sync_" + userObj.uid) || 0;
-
-            if (now - lastSync >= ONE_HOUR) {
-                logStatus("1 Hour threshold reached! Triggering periodic sync...");
-                syncToFirebase();
+                await userRef.set(freshUserData);
+                // Production Safe Setup: Sync variables seamlessly across sessions
+                localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: cleanUsername, balance: 500 }));
+                localStorage.removeItem("temp_pending_ref");
+            } else {
+                // Existing user validation & alignment across PC and Mobile
+                const existingData = doc.data();
+                localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: existingData.username, balance: existingData.balance }));
             }
+
+            // Sync structural parameters for the 1-hour interval logic
+            localStorage.setItem("coinpotli_sync_ts_" + user.uid, Date.now());
+
+            statusLabel.innerText = "ACCESS GRANTED! REDIRECTING...";
+            setTimeout(() => { enterDashboard(); }, 800);
         }
 
-        // Main Firebase Write Function (Jo single hit me load save karega)
-        async function syncToFirebase() {
-            if (!userObj.uid) return;
-
-            try {
-                // Poore 1 ghante ka cumulative balance ek hi baar database me update hoga
-                await db.collection("users").doc(userObj.uid).update({
-                    balance: userObj.balance,
-                    lastSyncedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                localStorage.setItem("coinpotli_last_sync_" + userObj.uid, Date.now());
-                logStatus("--> Firebase cloud database synced successfully!");
-            } catch (error) {
-                console.error("Firebase sync error:", error);
-                logStatus("Sync deferred due to network/error.");
-            }
+        function resetLoginButton(msg) {
+            const statusLabel = document.getElementById('loadingStatus');
+            const loginBtn = document.getElementById('loginBtn');
+            statusLabel.innerText = msg;
+            loginBtn.disabled = false;
+            loginBtn.style.opacity = "1";
         }
 
-        // Condition 2: Tab/Browser Close hone par auto-save logic
-        window.onbeforeunload = function() {
-            if (userObj.uid) {
-                // Browser ya tab close hote hi instant data update command
-                syncToFirebase();
-            }
-        };
-
-        // Condition 3: User Inactive (Idle) hone par auto sync logic
-        function startInactivityTracker() {
-            // Jab user screen par touch kare ya mouse ghumaye toh timer reset ho jaye
-            window.onload = resetInactivityTimer;
-            document.onmousemove = resetInactivityTimer;
-            document.onkeypress = resetInactivityTimer;
-            document.ontouchstart = resetInactivityTimer;
-            document.onclick = resetInactivityTimer;
+        function enterDashboard() {
+            window.location.href = 'dashboard.html';
         }
-
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            // Agar user 5 minute tak screen touch nahi karta
-            inactivityTimer = setTimeout(function() {
-                logStatus("User detected inactive for 5 mins. Syncing background data...");
-                syncToFirebase();
-            }, INACTIVITY_LIMIT);
-        }
-
-        // ==========================================
-        // 5. HELPER FUNCTIONS
-        // ==========================================
-        function updateUI() {
-            document.getElementById('headerUserBalance').innerText = userObj.balance.toLocaleString();
-        }
-
-        function logStatus(message) {
-            const logsContainer = document.getElementById("statusLogs");
-            const time = new Date().toLocaleTimeString();
-            logsContainer.innerHTML += `<div>[${time}] ${message}</div>`;
-            // Auto scroll to bottom
-            logsContainer.scrollTop = logsContainer.scrollHeight;
-        }
-
-        function handleLogout() {
-            // Logout karne se pehle data save karna zaroori hai
-            syncToFirebase().then(() => {
-                auth.signOut().then(() => {
-                    localStorage.clear();
-                    alert("Logged out!");
-                    location.reload();
-                });
-            });
-        }
-
-        // Har 5 minute me background automatic checker run karein
-        setInterval(checkPeriodicSync, 5 * 60 * 1000);
     </script>
 </body>
 </html>
