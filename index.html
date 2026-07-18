@@ -104,7 +104,7 @@
         <!-- Safety Footer Area Labels -->
         <div class="text-center space-y-1 pb-2">
             <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">No Investment Required • 100% Free Play to Earn</p>
-            <p class="text-[8px] text-gray-600 font-medium">V1.0.2 • © CoinPotli Network Inc.</p>
+            <p class="text-[8px] text-gray-600 font-medium">V1.0.3 • © CoinPotli Network Inc.</p>
         </div>
 
     </div>
@@ -123,10 +123,15 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let isProcessing = false; // Master lock to completely terminate reload loops
+        // MOBILE OPTIMIZATION: Enable multi-tab offline data persistence to make loads instantaneous
+        db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+            console.warn("Persistence status:", err.code);
+        });
 
-        // URL parsing and handling redirect outcomes sequentially
+        let isProcessing = false;
+
         window.onload = async function() {
+            // URL Referral Catch
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref');
             if (refCode) {
@@ -138,14 +143,14 @@
                 }
             }
             
-            // Execute redirect resolution immediately on load
+            // Mobile Redirect recovery check
             await checkRedirectResult();
         }
 
-        // Global Session Observer: Processes data only if no active sync is running
+        // Global Session Listener
         auth.onAuthStateChanged(async (user) => {
             if (user && !isProcessing) {
-                console.log("Observer detected login session.");
+                console.log("Observer catch active user.");
                 await handleUserFlow(user);
             }
         });
@@ -157,7 +162,7 @@
             const statusLabel = document.getElementById('loadingStatus');
             const loginBtn = document.getElementById('loginBtn');
 
-            if (statusLabel) statusLabel.innerText = "CONNECTING GOOGLE GATEWAY...";
+            if (statusLabel) statusLabel.innerText = "OPENING SECURE GATEWAY...";
             if (loginBtn) {
                 loginBtn.disabled = true;
                 loginBtn.style.opacity = "0.5";
@@ -168,50 +173,58 @@
             }
 
             const provider = new firebase.auth.GoogleAuthProvider();
+            // Mobile Optimization: Custom parameters to prevent heavy redirect data crash
+            provider.setCustomParameters({ prompt: 'select_account' });
+            
+            isProcessing = true; // Lock immediately to prevent double tap lag
             auth.signInWithRedirect(provider);
         }
 
         async function checkRedirectResult() {
             try {
                 const result = await auth.getRedirectResult();
-                if (result && result.user && !isProcessing) {
-                    console.log("Redirect result loaded successfully.");
+                if (result && result.user) {
                     await handleUserFlow(result.user);
                 }
             } catch (error) {
-                console.error("Redirect flow caught an error:", error);
-                resetLoginButton("LOGIN FAILED. RETRY AGAIN.");
-                alert("Authentication issue: " + error.message);
+                console.error("Redirect Error Catch:", error);
+                isProcessing = false;
+                resetLoginButton("LOGIN FAILED. TAP TO RETRY.");
             }
         }
 
-        // Centralized structural gateway for data sync and registration
         async function handleUserFlow(user) {
-            if (isProcessing) return;
-            isProcessing = true; // Engage master lock
-
+            isProcessing = true;
             const statusLabel = document.getElementById('loadingStatus');
-            if (statusLabel) statusLabel.innerText = "VERIFYING SECURE CLOUD...";
+            if (statusLabel) statusLabel.innerText = "FETCHING SECURE CLOUD DATA...";
 
             try {
                 const userRef = db.collection("users").doc(user.uid);
+                
+                // Mobile dynamic speed optimization: Pehle local storage lock set karo
+                localStorage.setItem("coinpotli_current_uid", user.uid);
+
                 const doc = await userRef.get();
 
                 if (doc.exists) {
                     const existingData = doc.data();
 
-                    // ANTI-CHEAT BLOCKER
                     if (existingData.isBanned === true) {
-                        alert("⚠️ YOUR ACCOUNT IS BANNED FOR CHEATING!");
+                        alert("⚠️ YOUR ACCOUNT IS BANNED!");
                         await auth.signOut();
+                        localStorage.clear();
                         resetLoginButton("ACCOUNT BANNED");
                         isProcessing = false;
                         return;
                     }
 
-                    localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: existingData.username, balance: existingData.balance }));
+                    // Strict Dashboard local-sync object structure
+                    localStorage.setItem("coinpotli_test_user", JSON.stringify({ 
+                        name: existingData.username, 
+                        balance: existingData.balance 
+                    }));
                 } else {
-                    // Fresh account cloud allocation logic
+                    // Sign up flow
                     const savedRefCode = localStorage.getItem("temp_pending_ref") || "NONE";
                     const cleanUsername = user.displayName ? "CP#" + user.displayName.split(' ')[0].toUpperCase() : "CP#PLAYER";
                     const generatedReferCode = "POTLI" + user.uid.substring(0, 5).toUpperCase();
@@ -219,28 +232,33 @@
                     const freshUserData = {
                         uid: user.uid,
                         username: cleanUsername,
-                        balance: 500, // Welcome Bonus
+                        balance: 500,
                         referral_code: generatedReferCode,
                         referred_by: savedRefCode,
-                        isBanned: false, // Default status
+                        isBanned: false,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
 
                     await userRef.set(freshUserData);
-                    localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: cleanUsername, balance: 500 }));
+                    
+                    localStorage.setItem("coinpotli_test_user", JSON.stringify({ 
+                        name: cleanUsername, 
+                        balance: 500 
+                    }));
                     localStorage.removeItem("temp_pending_ref");
                 }
 
-                localStorage.setItem("coinpotli_sync_ts_" + user.uid, Date.now());
-                if (statusLabel) statusLabel.innerText = "ACCESS GRANTED! REDIRECTING...";
+                if (statusLabel) statusLabel.innerText = "SUCCESS! ENTERING DASHBOARD...";
                 
-                // Break out from the index loop entirely by pushing state to dashboard
-                enterDashboard();
+                // Small safe timeout to allow slow mobile devices to store local data securely
+                setTimeout(() => {
+                    window.location.replace('dashboard.html');
+                }, 400);
 
             } catch (e) {
-                console.error("Firestore transaction failed:", e);
-                resetLoginButton("DATABASE ERROR. RETRY.");
-                isProcessing = false; // Release lock only to let user retry on hard database network drops
+                console.error("Critical Firestore process failure:", e);
+                isProcessing = false;
+                resetLoginButton("NETWORK RETRY REQUIRED.");
             }
         }
 
@@ -252,10 +270,6 @@
                 loginBtn.disabled = false;
                 loginBtn.style.opacity = "1";
             }
-        }
-
-        function enterDashboard() {
-            window.location.href = 'dashboard.html';
         }
     </script>
 </body>
