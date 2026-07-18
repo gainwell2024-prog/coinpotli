@@ -123,6 +123,8 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        let isSyncing = false; // Prevents duplicate execution crash on redirect return
+
         // URL parsing for automatic refer code injection
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -138,12 +140,10 @@
             checkRedirectResult();
         }
 
-        // Handle Firebase Auth Session Lifecycle
+        // Handle Firebase Auth Session Lifecycle safely
         auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                const statusLabel = document.getElementById('loadingStatus');
-                statusLabel.innerText = "AUTHENTICATED! SYNCING STATE...";
-                await syncUserNode(user);
+            if (user && !isSyncing) {
+                await handleUserFlow(user);
             }
         });
 
@@ -162,67 +162,87 @@
             }
 
             const provider = new firebase.auth.GoogleAuthProvider();
-            
-            // Fixed popup restriction crash on mobile browsers
             auth.signInWithRedirect(provider);
         }
 
         async function checkRedirectResult() {
             try {
                 const result = await auth.getRedirectResult();
-                if (result && result.user) {
-                    await syncUserNode(result.user);
+                if (result && result.user && !isSyncing) {
+                    await handleUserFlow(result.user);
                 }
             } catch (error) {
+                console.error("Redirect Error caught:", error);
                 resetLoginButton("LOGIN FAILED. RETRY AGAIN.");
                 alert("Authentication issue: " + error.message);
             }
         }
 
-        async function syncUserNode(user) {
+        // Centralized logic flow for handling database registration / authentication
+        async function handleUserFlow(user) {
+            isSyncing = true; // Lock the execution gate
             const statusLabel = document.getElementById('loadingStatus');
             statusLabel.innerText = "VERIFYING SECURE CLOUD...";
 
-            const userRef = db.collection("users").doc(user.uid);
-            const doc = await userRef.get();
+            try {
+                const userRef = db.collection("users").doc(user.uid);
+                const doc = await userRef.get();
 
-            if (!doc.exists) {
-                const savedRefCode = localStorage.getItem("temp_pending_ref") || "NONE";
-                const cleanUsername = user.displayName ? "CP#" + user.displayName.split(' ')[0].toUpperCase() : "CP#PLAYER";
-                const generatedReferCode = "POTLI" + user.uid.substring(0, 5).toUpperCase();
+                if (doc.exists) {
+                    const existingData = doc.data();
 
-                const freshUserData = {
-                    uid: user.uid,
-                    username: cleanUsername,
-                    balance: 500, // New users welcome gift coins
-                    referral_code: generatedReferCode,
-                    referred_by: savedRefCode,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                    // ANTI-CHEAT: Direct filtration on the front gate
+                    if (existingData.isBanned === true) {
+                        alert("⚠️ YOUR ACCOUNT IS BANNED FOR CHEATING!");
+                        await auth.signOut();
+                        resetLoginButton("ACCOUNT BANNED");
+                        isSyncing = false;
+                        return;
+                    }
 
-                await userRef.set(freshUserData);
-                // Production Safe Setup: Sync variables seamlessly across sessions
-                localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: cleanUsername, balance: 500 }));
-                localStorage.removeItem("temp_pending_ref");
-            } else {
-                // Existing user validation & alignment across PC and Mobile
-                const existingData = doc.data();
-                localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: existingData.username, balance: existingData.balance }));
+                    // Existing user validation & alignment across PC and Mobile
+                    localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: existingData.username, balance: existingData.balance }));
+                } else {
+                    const savedRefCode = localStorage.getItem("temp_pending_ref") || "NONE";
+                    const cleanUsername = user.displayName ? "CP#" + user.displayName.split(' ')[0].toUpperCase() : "CP#PLAYER";
+                    const generatedReferCode = "POTLI" + user.uid.substring(0, 5).toUpperCase();
+
+                    const freshUserData = {
+                        uid: user.uid,
+                        username: cleanUsername,
+                        balance: 500, // New users welcome gift coins
+                        referral_code: generatedReferCode,
+                        referred_by: savedRefCode,
+                        isBanned: false, // Default state is clean
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    await userRef.set(freshUserData);
+                    localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: cleanUsername, balance: 500 }));
+                    localStorage.removeItem("temp_pending_ref");
+                }
+
+                // Sync structural parameters for the 1-hour interval logic
+                localStorage.setItem("coinpotli_sync_ts_" + user.uid, Date.now());
+
+                statusLabel.innerText = "ACCESS GRANTED! REDIRECTING...";
+                setTimeout(() => { enterDashboard(); }, 800);
+
+            } catch (e) {
+                console.error("Firestore sync error:", e);
+                resetLoginButton("DATABASE ERROR. RETRY.");
+                isSyncing = false;
             }
-
-            // Sync structural parameters for the 1-hour interval logic
-            localStorage.setItem("coinpotli_sync_ts_" + user.uid, Date.now());
-
-            statusLabel.innerText = "ACCESS GRANTED! REDIRECTING...";
-            setTimeout(() => { enterDashboard(); }, 800);
         }
 
         function resetLoginButton(msg) {
             const statusLabel = document.getElementById('loadingStatus');
             const loginBtn = document.getElementById('loginBtn');
-            statusLabel.innerText = msg;
-            loginBtn.disabled = false;
-            loginBtn.style.opacity = "1";
+            if (statusLabel) statusLabel.innerText = msg;
+            if (loginBtn) {
+                loginBtn.disabled = false;
+                loginBtn.style.opacity = "1";
+            }
         }
 
         function enterDashboard() {
