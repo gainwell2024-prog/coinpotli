@@ -123,40 +123,46 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let isSyncing = false; // Prevents duplicate execution crash on redirect return
+        let isProcessing = false; // Master lock to completely terminate reload loops
 
-        // URL parsing for automatic refer code injection
-        window.onload = function() {
+        // URL parsing and handling redirect outcomes sequentially
+        window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref');
             if (refCode) {
                 const inputField = document.getElementById('referCodeInput');
-                inputField.value = refCode.toUpperCase();
-                inputField.disabled = true; 
-                inputField.style.opacity = "0.6";
+                if(inputField) {
+                    inputField.value = refCode.toUpperCase();
+                    inputField.disabled = true; 
+                    inputField.style.opacity = "0.6";
+                }
             }
             
-            // Mobile Optimization: Handle redirect results back smoothly
-            checkRedirectResult();
+            // Execute redirect resolution immediately on load
+            await checkRedirectResult();
         }
 
-        // Handle Firebase Auth Session Lifecycle safely
+        // Global Session Observer: Processes data only if no active sync is running
         auth.onAuthStateChanged(async (user) => {
-            if (user && !isSyncing) {
+            if (user && !isProcessing) {
+                console.log("Observer detected login session.");
                 await handleUserFlow(user);
             }
         });
 
         function continueWithGoogle() {
+            if (isProcessing) return;
+            
             const enteredReferCode = document.getElementById('referCodeInput').value.trim().toUpperCase();
             const statusLabel = document.getElementById('loadingStatus');
             const loginBtn = document.getElementById('loginBtn');
 
-            statusLabel.innerText = "CONNECTING GOOGLE GATEWAY...";
-            loginBtn.disabled = true;
-            loginBtn.style.opacity = "0.5";
+            if (statusLabel) statusLabel.innerText = "CONNECTING GOOGLE GATEWAY...";
+            if (loginBtn) {
+                loginBtn.disabled = true;
+                loginBtn.style.opacity = "0.5";
+            }
 
-            // Saved temporary code context to preserve logic through redirect
             if(enteredReferCode) {
                 localStorage.setItem("temp_pending_ref", enteredReferCode);
             }
@@ -168,21 +174,24 @@
         async function checkRedirectResult() {
             try {
                 const result = await auth.getRedirectResult();
-                if (result && result.user && !isSyncing) {
+                if (result && result.user && !isProcessing) {
+                    console.log("Redirect result loaded successfully.");
                     await handleUserFlow(result.user);
                 }
             } catch (error) {
-                console.error("Redirect Error caught:", error);
+                console.error("Redirect flow caught an error:", error);
                 resetLoginButton("LOGIN FAILED. RETRY AGAIN.");
                 alert("Authentication issue: " + error.message);
             }
         }
 
-        // Centralized logic flow for handling database registration / authentication
+        // Centralized structural gateway for data sync and registration
         async function handleUserFlow(user) {
-            isSyncing = true; // Lock the execution gate
+            if (isProcessing) return;
+            isProcessing = true; // Engage master lock
+
             const statusLabel = document.getElementById('loadingStatus');
-            statusLabel.innerText = "VERIFYING SECURE CLOUD...";
+            if (statusLabel) statusLabel.innerText = "VERIFYING SECURE CLOUD...";
 
             try {
                 const userRef = db.collection("users").doc(user.uid);
@@ -191,18 +200,18 @@
                 if (doc.exists) {
                     const existingData = doc.data();
 
-                    // ANTI-CHEAT: Direct filtration on the front gate
+                    // ANTI-CHEAT BLOCKER
                     if (existingData.isBanned === true) {
                         alert("⚠️ YOUR ACCOUNT IS BANNED FOR CHEATING!");
                         await auth.signOut();
                         resetLoginButton("ACCOUNT BANNED");
-                        isSyncing = false;
+                        isProcessing = false;
                         return;
                     }
 
-                    // Existing user validation & alignment across PC and Mobile
                     localStorage.setItem("coinpotli_test_user", JSON.stringify({ name: existingData.username, balance: existingData.balance }));
                 } else {
+                    // Fresh account cloud allocation logic
                     const savedRefCode = localStorage.getItem("temp_pending_ref") || "NONE";
                     const cleanUsername = user.displayName ? "CP#" + user.displayName.split(' ')[0].toUpperCase() : "CP#PLAYER";
                     const generatedReferCode = "POTLI" + user.uid.substring(0, 5).toUpperCase();
@@ -210,10 +219,10 @@
                     const freshUserData = {
                         uid: user.uid,
                         username: cleanUsername,
-                        balance: 500, // New users welcome gift coins
+                        balance: 500, // Welcome Bonus
                         referral_code: generatedReferCode,
                         referred_by: savedRefCode,
-                        isBanned: false, // Default state is clean
+                        isBanned: false, // Default status
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
 
@@ -222,16 +231,16 @@
                     localStorage.removeItem("temp_pending_ref");
                 }
 
-                // Sync structural parameters for the 1-hour interval logic
                 localStorage.setItem("coinpotli_sync_ts_" + user.uid, Date.now());
-
-                statusLabel.innerText = "ACCESS GRANTED! REDIRECTING...";
-                setTimeout(() => { enterDashboard(); }, 800);
+                if (statusLabel) statusLabel.innerText = "ACCESS GRANTED! REDIRECTING...";
+                
+                // Break out from the index loop entirely by pushing state to dashboard
+                enterDashboard();
 
             } catch (e) {
-                console.error("Firestore sync error:", e);
+                console.error("Firestore transaction failed:", e);
                 resetLoginButton("DATABASE ERROR. RETRY.");
-                isSyncing = false;
+                isProcessing = false; // Release lock only to let user retry on hard database network drops
             }
         }
 
