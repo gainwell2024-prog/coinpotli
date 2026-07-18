@@ -1,13 +1,10 @@
-// Dashboard open hote hi ye check karega
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         const userDoc = await firebase.firestore().collection("users").doc(user.uid).get();
-        
-        // Agar admin ne isko BAN kar diya hai:
         if (userDoc.exists && userDoc.data().isBanned === true) {
-            alert("⚠️ ACCOUNT BANNED FOR CHEATING!");
-            firebase.auth().signOut(); // Log out kar do
-            window.location.href = "index.html"; // Login page par wapas phenk do
+            alert("YOUR ACCOUNT IS BANNED FOR CHEATING/BOTS!");
+            firebase.auth().signOut();
+            window.location.href = "index.html"; // Kickout back to login
         }
     }
 });
