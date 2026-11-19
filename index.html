@@ -6,32 +6,32 @@
     <title>Login - CoinPotli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Real Firebase Compatibility SDKs -->
+
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
     <style>
-        html, body { 
-            background: #060d1a; 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100%; 
+        html, body {
+            background: #060d1a;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             -webkit-user-select: none;
             user-select: none;
+            font-family: 'Segoe UI', sans-serif;
         }
-
         .app-container {
             width: 100%;
-            max-width: 425px; 
+            max-width: 425px;
             height: 100%;
-            max-height: 900px; 
+            max-height: 900px;
             background: radial-gradient(circle at top, #1a2a4a 0%, #0a192f 100%);
             display: flex;
             flex-direction: column;
@@ -40,7 +40,6 @@
             box-sizing: border-box;
             position: relative;
         }
-
         @media (min-width: 426px) {
             .app-container {
                 border-radius: 40px;
@@ -49,226 +48,189 @@
                 box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
             }
         }
-
-        .glass-card { 
-            background: rgba(17, 34, 64, 0.6); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(212,175,55,0.15); 
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); 
+        .glass-card {
+            background: rgba(17, 34, 64, 0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.18);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
-        
-        .gold-btn { background: linear-gradient(135deg, #d4af37 0%, #f1d572 50%, #aa8a2e 100%); color: #0a192f; }
-        .flag-icon { width: 16px; height: 11px; display: inline-block; background: linear-gradient(#FF9933, #FFF, #128807); border-radius: 1px; margin-right: 5px; }
+        .gold-btn {
+            background: linear-gradient(135deg, #d4af37 0%, #f1d572 50%, #aa8a2e 100%);
+            color: #0a192f;
+        }
+        .flag-icon {
+            width: 16px;
+            height: 11px;
+            display: inline-block;
+            background: linear-gradient(#FF9933, #FFF, #128807);
+            border-radius: 1px;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        
-        <!-- Brand Logo Section -->
         <div class="text-center mt-4">
-            <div class="w-20 h-20 gold-btn rounded-[2rem] mx-auto flex items-center justify-center shadow-[0_0_40px_rgba(212,175,55,0.2)] mb-4 animate-bounce" style="animation-duration: 3s;">
+            <div class="w-20 h-20 gold-btn rounded-[2rem] mx-auto flex items-center justify-center shadow-[0_0_40px_rgba(212,175,55,0.25)] mb-4">
                 <i class="fas fa-coins text-3xl"></i>
             </div>
-            <h1 class="text-4xl font-black text-white tracking-tighter uppercase italic">Coin<span class="text-[#d4af37]">Potli</span></h1>
-            <div class="flex items-center justify-center mt-2 opacity-80">
+            <h1 class="text-4xl font-black text-white tracking-tighter uppercase italic">
+                Coin<span class="text-[#d4af37]">Potli</span>
+            </h1>
+            <div class="flex items-center justify-center mt-2 opacity-85">
                 <span class="flag-icon"></span>
-                <p class="text-[9px] text-gray-300 font-black uppercase tracking-[0.2em]">India's Most Trusted Rewards Hub</p>
+                <p class="text-[9px] text-gray-300 font-black uppercase tracking-[0.2em]">
+                    India's Most Trusted Rewards Hub
+                </p>
             </div>
         </div>
 
-        <!-- Google Login Card Frame -->
         <div class="w-full glass-card rounded-[2.5rem] p-6 mb-4">
-            <div id="loginSection" class="space-y-4">
+            <div class="space-y-4">
                 <div class="text-center">
                     <h2 class="text-white font-black text-xs uppercase tracking-widest">Sign In / Sign Up</h2>
-                    <p id="loadingStatus" class="text-gray-500 text-[9px] font-bold mt-1">SECURE 1-CLICK INSTANT ACCESS</p>
+                    <p class="text-gray-500 text-[9px] font-bold mt-1">EMAIL INSTANT ACCESS</p>
                 </div>
-                
-                <!-- Main Login Trigger Button -->
-                <button id="loginBtn" onclick="continueWithGoogle()" class="w-full gold-btn py-4 rounded-2xl font-black uppercase tracking-[0.1em] text-xs shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
-                    <i class="fab fa-google text-sm"></i> Continue with Google
+
+                <button id="googleLoginBtn" onclick="continueWithEMAIL()" class="w-full gold-btn py-4 rounded-2xl font-black uppercase tracking-[0.1em] text-xs shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fab fa-google text-sm"></i> Continue with EMAIL
                 </button>
 
-                <!-- Premium Referral Code Box -->
                 <div class="pt-2">
-                    <div class="relative bg-black/30 rounded-xl border border-white/5 p-1 flex items-center">
+                    <div class="relative bg-black/30 rounded-xl border border-white/10 p-1 flex items-center">
                         <span class="text-gray-500 pl-3 text-xs"><i class="fas fa-user-plus"></i></span>
-                        <input type="text" id="referCodeInput" placeholder="REFER CODE (OPTIONAL)" class="w-full bg-transparent text-white text-xs font-black uppercase tracking-widest px-3 py-2 focus:outline-none placeholder-gray-600">
+                        <input
+                            type="text"
+                            id="referCodeInput"
+                            placeholder="REFER CODE (OPTIONAL)"
+                            class="w-full bg-transparent text-white text-xs font-black uppercase tracking-widest px-3 py-2 focus:outline-none placeholder-gray-600"
+                        >
                     </div>
                 </div>
+
+                <p id="statusMsg" class="text-center text-[10px] text-amber-300 font-semibold min-h-[14px]"></p>
             </div>
         </div>
 
-        <!-- Safety Footer Area Labels -->
         <div class="text-center space-y-1 pb-2">
-            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">No Investment Required • 100% Free Play to Earn</p>
-            <p class="text-[8px] text-gray-600 font-medium">V1.0.3 • © CoinPotli Network Inc.</p>
+            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
+                No Investment Required • 100% Free Play to WIN
+            </p>
+            <p class="text-[8px] text-gray-600 font-medium">
+                V1.0.3 • © CoinPotli Network
+            </p>
         </div>
-
     </div>
 
     <script>
+        // Firebase Config yahin direct laga diya hai
         const firebaseConfig = {
             apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVlAP9LhgbQodY",
             authDomain: "cpin-4cca9.firebaseapp.com",
+            databaseURL: "https://cpin-4cca9-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "cpin-4cca9",
             storageBucket: "cpin-4cca9.firebasestorage.app",
             messagingSenderId: "790141628965",
             appId: "1:790141628965:web:6e6a8d465a095c626585cc"
         };
-        
+
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // MOBILE OPTIMIZATION: Enable multi-tab offline data persistence to make loads instantaneous
-        db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
-            console.warn("Persistence status:", err.code);
-        });
-
-        let isProcessing = false;
-
-        window.onload = async function() {
-            // URL Referral Catch
+        window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
-            const refCode = urlParams.get('ref');
+            const refCode = urlParams.get("ref");
             if (refCode) {
-                const inputField = document.getElementById('referCodeInput');
-                if(inputField) {
-                    inputField.value = refCode.toUpperCase();
-                    inputField.disabled = true; 
-                    inputField.style.opacity = "0.6";
-                }
+                const input = document.getElementById("referCodeInput");
+                input.value = refCode.toUpperCase();
+                input.disabled = true;
+                input.style.opacity = "0.65";
             }
-            
-            // Mobile Redirect recovery check
-            await checkRedirectResult();
+        };
+
+        function setStatus(text) {
+            document.getElementById("statusMsg").textContent = text || "";
         }
 
-        // Global Session Listener
-        auth.onAuthStateChanged(async (user) => {
-            if (user && !isProcessing) {
-                console.log("Observer catch active user.");
-                await handleUserFlow(user);
-            }
-        });
+        async function continueWithGoogle() {
+            const btn = document.getElementById("googleLoginBtn");
+            const enteredReferCode = document.getElementById("referCodeInput").value.trim().toUpperCase();
 
-        function continueWithGoogle() {
-            if (isProcessing) return;
-            
-            const enteredReferCode = document.getElementById('referCodeInput').value.trim().toUpperCase();
-            const statusLabel = document.getElementById('loadingStatus');
-            const loginBtn = document.getElementById('loginBtn');
-
-            if (statusLabel) statusLabel.innerText = "OPENING SECURE GATEWAY...";
-            if (loginBtn) {
-                loginBtn.disabled = true;
-                loginBtn.style.opacity = "0.5";
-            }
-
-            if(enteredReferCode) {
-                localStorage.setItem("temp_pending_ref", enteredReferCode);
-            }
-
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // Mobile Optimization: Custom parameters to prevent heavy redirect data crash
-            provider.setCustomParameters({ prompt: 'select_account' });
-            
-            isProcessing = true; // Lock immediately to prevent double tap lag
-            auth.signInWithRedirect(provider);
-        }
-
-        async function checkRedirectResult() {
-            try {
-                const result = await auth.getRedirectResult();
-                if (result && result.user) {
-                    await handleUserFlow(result.user);
-                }
-            } catch (error) {
-                console.error("Redirect Error Catch:", error);
-                isProcessing = false;
-                resetLoginButton("LOGIN FAILED. TAP TO RETRY.");
-            }
-        }
-
-        async function handleUserFlow(user) {
-            isProcessing = true;
-            const statusLabel = document.getElementById('loadingStatus');
-            if (statusLabel) statusLabel.innerText = "FETCHING SECURE CLOUD DATA...";
+            btn.disabled = true;
+            setStatus("Signing in with Google...");
 
             try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+
                 const userRef = db.collection("users").doc(user.uid);
-                
-                // Mobile dynamic speed optimization: Pehle local storage lock set karo
-                localStorage.setItem("coinpotli_current_uid", user.uid);
+                const docSnap = await userRef.get();
 
-                const doc = await userRef.get();
+                let userCoins = 100;
+                let transactions = [];
+                let referredBy = enteredReferCode || "NONE";
+                const userName = user.displayName || user.email.split("@")[0];
 
-                if (doc.exists) {
-                    const existingData = doc.data();
+                if (!docSnap.exists) {
+                    transactions.push({
+                        type: "earn",
+                        title: "Welcome Bonus",
+                        amount: 100,
+                        date: new Date().toLocaleDateString(),
+                        icon: "fa-gift"
+                    });
 
-                    if (existingData.isBanned === true) {
-                        alert("⚠️ YOUR ACCOUNT IS BANNED!");
-                        await auth.signOut();
-                        localStorage.clear();
-                        resetLoginButton("ACCOUNT BANNED");
-                        isProcessing = false;
-                        return;
+                    if (enteredReferCode === "EARN500" || enteredReferCode.startsWith("POTLI")) {
+                        userCoins += 500;
+                        transactions.push({
+                            type: "earn",
+                            title: "Referral Bonus",
+                            amount: 500,
+                            date: new Date().toLocaleDateString(),
+                            icon: "fa-users"
+                        });
                     }
 
-                    // Strict Dashboard local-sync object structure
-                    localStorage.setItem("coinpotli_test_user", JSON.stringify({ 
-                        name: existingData.username, 
-                        balance: existingData.balance 
-                    }));
-                } else {
-                    // Sign up flow
-                    const savedRefCode = localStorage.getItem("temp_pending_ref") || "NONE";
-                    const cleanUsername = user.displayName ? "CP#" + user.displayName.split(' ')[0].toUpperCase() : "CP#PLAYER";
-                    const generatedReferCode = "POTLI" + user.uid.substring(0, 5).toUpperCase();
-
-                    const freshUserData = {
+                    await userRef.set({
                         uid: user.uid,
-                        username: cleanUsername,
-                        balance: 500,
-                        referral_code: generatedReferCode,
-                        referred_by: savedRefCode,
-                        isBanned: false,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    };
+                        name: userName,
+                        email: user.email,
+                        photoURL: user.photoURL || "",
+                        coins: userCoins,
+                        referredBy: referredBy,
+                        transactions: transactions,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    const existingData = docSnap.data();
+                    userCoins = existingData.coins ?? 0;
+                    transactions = existingData.transactions ?? [];
+                    referredBy = existingData.referredBy || referredBy;
 
-                    await userRef.set(freshUserData);
-                    
-                    localStorage.setItem("coinpotli_test_user", JSON.stringify({ 
-                        name: cleanUsername, 
-                        balance: 500 
-                    }));
-                    localStorage.removeItem("temp_pending_ref");
+                    await userRef.update({
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 }
 
-                if (statusLabel) statusLabel.innerText = "SUCCESS! ENTERING DASHBOARD...";
-                
-                // Small safe timeout to allow slow mobile devices to store local data securely
-                setTimeout(() => {
-                    window.location.replace('dashboard.html');
-                }, 400);
+                localStorage.setItem("userLoggedIn", "true");
+                localStorage.setItem("userUid", user.uid);
+                localStorage.setItem("userEmail", user.email);
+                localStorage.setItem("userName", userName);
+                localStorage.setItem("coins", String(userCoins));
+                localStorage.setItem("referredBy", referredBy);
+                localStorage.setItem("userTransactions", JSON.stringify(transactions));
 
-            } catch (e) {
-                console.error("Critical Firestore process failure:", e);
-                isProcessing = false;
-                resetLoginButton("NETWORK RETRY REQUIRED.");
-            }
-        }
-
-        function resetLoginButton(msg) {
-            const statusLabel = document.getElementById('loadingStatus');
-            const loginBtn = document.getElementById('loginBtn');
-            if (statusLabel) statusLabel.innerText = msg;
-            if (loginBtn) {
-                loginBtn.disabled = false;
-                loginBtn.style.opacity = "1";
+                setStatus("Login successful! Redirecting...");
+                window.location.href = "dashboard.html";
+            } catch (error) {
+                console.error("Google Sign-In Error:", error);
+                setStatus("Error: " + error.message);
+                alert("Login failed: " + error.message);
+                btn.disabled = false;
             }
         }
     </script>
