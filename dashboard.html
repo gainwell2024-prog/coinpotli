@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Real Firebase Compatibility SDKs Included -->
+    <!-- Firebase Compatibility SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -53,7 +53,6 @@
         <p class="text-[#d4af37] font-black tracking-widest uppercase text-[11px] mb-2">Claiming Rewards in...</p>
         <div id="adTimer" class="text-white font-black text-5xl mb-6">10</div>
         
-        <!-- Dedicated A-Ads Space inside Timer Modal -->
         <div class="w-[320px] h-[50px] bg-black/60 rounded-xl border border-white/10 flex items-center justify-center shadow-2xl">
             <span class="text-[8px] text-yellow-500/80 font-black uppercase tracking-widest p-4 text-center">
                 [ A-ADS BANNER CODE HERE (320x50) ]
@@ -96,7 +95,7 @@
                     <h2 class="text-4xl font-black mb-4 tracking-tight"><span id="totalCoins">0</span> <span class="text-lg font-bold opacity-60">Coins</span></h2>
                     <div class="flex justify-between items-center bg-black/10 p-3 rounded-2xl">
                         <p class="text-[10px] font-black uppercase">Value: ₹<span id="inrValue">0.00</span></p>
-                        <button class="bg-[#0a192f] text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider">Withdraw</button>
+                        <button onclick="alert('Withdraw system coming soon!')" class="bg-[#0a192f] text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider">Withdraw</button>
                     </div>
                     <i class="fas fa-coins absolute -bottom-4 -right-2 text-black/5 text-7xl rotate-12"></i>
                 </div>
@@ -183,7 +182,6 @@
     </div>
 
     <script>
-        // Real Live Config Injected
         const firebaseConfig = {
             apiKey: "AIzaSyAJktqT5BuUFUqW6OC-TtVlAP9LhgbQodY",
             authDomain: "cpin-4cca9.firebaseapp.com",
@@ -192,8 +190,10 @@
             messagingSenderId: "790141628965",
             appId: "1:790141628965:web:6e6a8d465a095c626585cc"
         };
-        
-        firebase.initializeApp(firebaseConfig);
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
         const db = firebase.firestore();
 
@@ -203,162 +203,199 @@
 
         let autoMinerInterval = null;
         let cycleTimeLeft = 10;
+        let isUpdatingMiner = false;
 
-        // Firebase Auth State Listener (Full Live Setup)
-        auth.onAuthStateChanged(async (user) => {
+        function getCoinsBalance() {
+            if (typeof userData.coins === "number") return userData.coins;
+            if (typeof userData.balance === "number") return userData.balance;
+            return 0;
+        }
+
+        auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
                 currentUserRef = db.collection("users").doc(user.uid);
-                
-                // Realtime Sync Strategy - Jaise hi DB badlega, UI apne aap update hoga!
-                currentUserRef.onSnapshot((doc) => {
+
+                currentUserRef.onSnapshot(async (doc) => {
                     if (doc.exists) {
                         userData = doc.data();
-                        
-                        // Default Energy set kar rahe hain agar DB me na ho
-                        if (userData.energy === undefined) userData.energy = 15;
-                        
+
+                        if (userData.energy === undefined) {
+                            userData.energy = 15;
+                            await currentUserRef.update({ energy: 15 });
+                        }
+
+                        localStorage.setItem("coins", String(getCoinsBalance()));
                         updateUI();
-                        startAutoMiner();
+                        ensureMinerLoop();
                     } else {
                         console.log("User doc not found in Firestore!");
                     }
                 });
             } else {
-                // Agar logged in nahi hai, toh login screen par feko
-                window.location.href = 'login.html';
+                window.location.href = "index.html";
             }
         });
 
         function updateUI() {
-            document.getElementById("totalCoins").innerText = (userData.balance || 0).toLocaleString();
-            document.getElementById("inrValue").innerText = ((userData.balance || 0) / 100).toFixed(2);
-            document.getElementById("displayEnergy").innerText = userData.energy;
+            const coins = getCoinsBalance();
+            document.getElementById("totalCoins").innerText = coins.toLocaleString();
+            document.getElementById("inrValue").innerText = (coins / 100).toFixed(2);
+            document.getElementById("displayEnergy").innerText = userData.energy ?? 0;
 
             checkUserProfileState();
             checkHourlyStatus();
         }
 
         function checkUserProfileState() {
-            let name = userData.username || "";
-            // Agar default ya random tag ho toh edit karne ka chance do
-            if(name.startsWith("CP#PLAYER") || name.trim() === "") {
+            const tag = userData.username || "";
+            if (tag.startsWith("CP#PLAYER") || tag.trim() === "") {
                 document.getElementById("profileAlertBanner").classList.remove("hidden");
                 document.getElementById("usernameTagContainer").classList.add("hidden");
             } else {
                 document.getElementById("profileAlertBanner").classList.add("hidden");
                 document.getElementById("usernameTagContainer").classList.remove("hidden");
-                document.getElementById("userNameHeader").innerText = name.toUpperCase();
+                document.getElementById("userNameHeader").innerText = tag.toUpperCase();
             }
         }
 
         async function saveUsername() {
             let name = document.getElementById("newUsernameInput").value.trim().toUpperCase();
-            if(name.length < 3) {
+            if (name.length < 3) {
                 alert("Name must be at least 3 characters!");
                 return;
             }
-            name = name.replace(/[^A-Z0-9]/g, ""); 
-            let randomDigits = Math.floor(1000 + Math.random() * 9000);
-            let finalCPTag = "CP#" + name + randomDigits;
+            name = name.replace(/[^A-Z0-9]/g, "");
+            if (name.length < 3) {
+                alert("Use at least 3 letters or numbers!");
+                return;
+            }
+            const randomDigits = Math.floor(1000 + Math.random() * 9000);
+            const finalCPTag = "CP#" + name + randomDigits;
 
             if (currentUserRef) {
                 await currentUserRef.update({ username: finalCPTag });
+                localStorage.setItem("userName", finalCPTag);
                 alert("Username tag updated successfully!");
             }
         }
 
         function showAdBannerTimer(callback) {
-            const overlay = document.getElementById('claimAdOverlay');
-            overlay.style.display = 'flex';
+            const overlay = document.getElementById("claimAdOverlay");
+            overlay.style.display = "flex";
             let left = 10;
-            document.getElementById('adTimer').innerText = left;
-            let int = setInterval(() => {
+            document.getElementById("adTimer").innerText = left;
+            const int = setInterval(() => {
                 left--;
-                document.getElementById('adTimer').innerText = left;
-                if(left <= 0) { 
-                    clearInterval(int); 
-                    overlay.style.display = 'none'; 
-                    callback(); 
+                document.getElementById("adTimer").innerText = left;
+                if (left <= 0) {
+                    clearInterval(int);
+                    overlay.style.display = "none";
+                    callback();
                 }
             }, 1000);
         }
 
         async function claimHourly() {
             if (!currentUserRef) return;
-            
-            const now = new Date().getTime();
+
+            const now = Date.now();
             const last = userData.lastHourly || 0;
-            if (now - last < 3600000) return; // 1 ghanta check
+            if (now - last < 3600000) return;
 
             showAdBannerTimer(async () => {
-                let currentCoins = userData.balance || 0;
-                let currentEnergy = userData.energy !== undefined ? userData.energy : 15;
+                const currentCoins = getCoinsBalance();
+                const currentEnergy = userData.energy !== undefined ? userData.energy : 15;
+                const existingTx = Array.isArray(userData.transactions) ? [...userData.transactions] : [];
 
-                // Live Firestore Update
+                existingTx.push({
+                    type: "earn",
+                    title: "Faucet Claim",
+                    amount: 10,
+                    date: new Date().toLocaleDateString(),
+                    icon: "fa-cubes"
+                });
+
                 await currentUserRef.update({
-                    balance: currentCoins + 10,
+                    coins: currentCoins + 10,
                     energy: currentEnergy + 50,
-                    lastHourly: now
+                    lastHourly: now,
+                    transactions: existingTx
                 });
             });
         }
 
         function checkHourlyStatus() {
             const last = userData.lastHourly || 0;
-            if(!last) return;
-            
-            const diff = 3600000 - (new Date().getTime() - last);
-            if(diff > 0) {
+            if (!last) {
+                document.getElementById("hourlyTimerDisplay").innerText = "Get 50 ACP Energy + 10 Coins";
+                document.getElementById("hourlyBadge").innerText = "Claim";
+                document.getElementById("hourlyBtn").disabled = false;
+                return;
+            }
+
+            const diff = 3600000 - (Date.now() - last);
+            if (diff > 0) {
                 const m = Math.floor(diff / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
-                document.getElementById('hourlyTimerDisplay').innerText = `Back in ${m}m ${s}s`;
-                document.getElementById('hourlyBadge').innerText = "Locked";
-                document.getElementById('hourlyBtn').disabled = true;
+                document.getElementById("hourlyTimerDisplay").innerText = `Back in ${m}m ${s}s`;
+                document.getElementById("hourlyBadge").innerText = "Locked";
+                document.getElementById("hourlyBtn").disabled = true;
             } else {
-                document.getElementById('hourlyTimerDisplay').innerText = "Get 50 ACP Energy + 10 Coins";
-                document.getElementById('hourlyBadge').innerText = "Claim";
-                document.getElementById('hourlyBtn').disabled = false;
+                document.getElementById("hourlyTimerDisplay").innerText = "Get 50 ACP Energy + 10 Coins";
+                document.getElementById("hourlyBadge").innerText = "Claim";
+                document.getElementById("hourlyBtn").disabled = false;
             }
         }
 
-        function startAutoMiner() {
+        function ensureMinerLoop() {
+            const currentEnergy = userData.energy !== undefined ? userData.energy : 0;
+
+            if (currentEnergy < 2) {
+                if (autoMinerInterval) {
+                    clearInterval(autoMinerInterval);
+                    autoMinerInterval = null;
+                }
+                document.getElementById("minerProgress").style.width = "0%";
+                document.getElementById("cycleTimerDisplay").innerText = "Idle";
+                document.getElementById("minerStatusBadge").innerText = "Need Energy (ACP)";
+                document.getElementById("gearIcon").classList.remove("animate-spin");
+                return;
+            }
+
             if (autoMinerInterval) return;
 
             autoMinerInterval = setInterval(async () => {
-                let currentEnergy = userData.energy !== undefined ? userData.energy : 15;
-                
-                if (currentEnergy >= 2) {
-                    cycleTimeLeft--;
-                    document.getElementById("minerStatusBadge").innerText = "Auto Claim Running";
-                    document.getElementById("gearIcon").classList.add("animate-spin");
-                    
-                    let elapsedPercent = ((10 - cycleTimeLeft) / 10) * 100;
-                    document.getElementById("minerProgress").style.width = elapsedPercent + "%";
-                    document.getElementById("cycleTimerDisplay").innerText = cycleTimeLeft + "s";
+                if (isUpdatingMiner) return;
+                const energyNow = userData.energy !== undefined ? userData.energy : 0;
 
-                    if (cycleTimeLeft <= 0) {
-                        cycleTimeLeft = 10;
-                        document.getElementById("minerProgress").style.width = "0%";
+                if (energyNow < 2) {
+                    ensureMinerLoop();
+                    return;
+                }
 
-                        let currentCoins = userData.balance || 0;
-                        
-                        // Miner cycle end hone par sidha live DB update push karo
-                        clearInterval(autoMinerInterval); // Pause interval during async write
-                        autoMinerInterval = null;
+                cycleTimeLeft--;
+                document.getElementById("minerStatusBadge").innerText = "Auto Claim Running";
+                document.getElementById("gearIcon").classList.add("animate-spin");
 
-                        await currentUserRef.update({
-                            energy: currentEnergy - 2,
-                            balance: currentCoins + 5
-                        });
-                    }
-                } else {
+                const elapsedPercent = ((10 - cycleTimeLeft) / 10) * 100;
+                document.getElementById("minerProgress").style.width = elapsedPercent + "%";
+                document.getElementById("cycleTimerDisplay").innerText = cycleTimeLeft + "s";
+
+                if (cycleTimeLeft <= 0) {
+                    isUpdatingMiner = true;
+                    cycleTimeLeft = 10;
                     document.getElementById("minerProgress").style.width = "0%";
-                    document.getElementById("cycleTimerDisplay").innerText = "Idle";
-                    document.getElementById("minerStatusBadge").innerText = "Need Energy (ACP)";
-                    document.getElementById("gearIcon").classList.remove("animate-spin");
-                    clearInterval(autoMinerInterval);
-                    autoMinerInterval = null;
+
+                    const coinsNow = getCoinsBalance();
+                    try {
+                        await currentUserRef.update({
+                            energy: energyNow - 2,
+                            coins: coinsNow + 5
+                        });
+                    } finally {
+                        isUpdatingMiner = false;
+                    }
                 }
             }, 1000);
         }
